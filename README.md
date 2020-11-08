@@ -1,5 +1,5 @@
 # 개인 프로젝트
-- 스펙
+- 스펙<br/>
 NodeJs/MariaDB
 <br/>
 
