@@ -1,3 +1,9 @@
+/**
+ *
+ * 배치용 DB
+ *
+ */
+
 const pool = require('../db/pool.js');
 
 module.exports = {
@@ -136,30 +142,57 @@ module.exports = {
     conn.release();
     return rows;
   },
-  // 동 조회
+  // 구/시에 속한 동 조회
   async getDongs(cortarNo = '') {
     const conn = await pool.getConnection();
-    const sql = `SELECT * FROM regions WHERE cortar_no LIKE '${cortarNo}%' AND cortar_type = 'sec' ORDER BY cortar_no`;
+    const sql = `SELECT * FROM regions 
+    WHERE 
+      cortar_no LIKE '${cortarNo.substring(0, 4)}%' AND cortar_type = 'sec' ORDER BY cortar_no`;
     const [rows] = await conn.query(sql);
     conn.release();
     return rows;
   },
+  // 아파트 구/시 단위로 조회
+  async getAptsByCity(cortarNo = '') {
+    return await this.getApts(cortarNo, 'dvsn', 'APT');
+  },
+  // 아파트 동 단위로 조회
+  async getAptsByDong(cortarNo = '') {
+    return await this.getApts(cortarNo, 'sec', 'APT');
+  },
+  // 아파트분양권 구/시 단위로 조회
+  async getAbygByCity(cortarNo = '') {
+    return await this.getApts(cortarNo, 'dvsn', 'ABYG');
+  },
+  // 아파트분양권 동 단위로 조회
+  async getAbygByDong(cortarNo = '') {
+    return await this.getApts(cortarNo, 'sec', 'ABYG');
+  },
   /**
-   * 분양권아파트 조회
+   * 아파트 조회
    * @param {*} cortarNo
    * @param {*} cortarType
    * 'dvsn': 구/시 단위로 조회
    * 'sec': 동 단위로 조회
    */
-  async getBunYangApt(cortarNo = '', cortarType = 'dvsn') {
+  async getApts(cortarNo = '', cortarType = 'dvsn', realEstateTypeCode = '') {
     const conn = await pool.getConnection();
-    let sql = `SELECT * FROM apt WHERE real_estate_type_code = 'ABYG'`;
+    let sql = `SELECT * FROM apt`;
     if (cortarNo) {
+      sql += ` WHERE`;
       if (cortarType === 'dvsn') {
-        sql += ` and cortar_no LIKE '${cortarNo.substring(0, 4)}%'`;
+        sql += ` cortar_no LIKE '${cortarNo.substring(0, 4)}%'`;
       } else {
-        sql += ` and cortar_no = '${cortarNo}'`;
+        sql += ` cortar_no = '${cortarNo}'`;
       }
+    }
+    if (realEstateTypeCode) {
+      if (cortarNo) {
+        sql += ` AND`;
+      } else {
+        sql += ` WHERE`;
+      }
+      sql += ` real_estate_type_code = '${realEstateTypeCode}'`;
     }
     const [rows] = await conn.query(sql);
     conn.release();

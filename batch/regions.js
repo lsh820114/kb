@@ -1,10 +1,9 @@
 /**
- * -배치
+ *
  * 시/도, 시/군/구, 읍/면/동 정보수집
  *
  */
 
-require('../util/initialize.js');
 const req = require('../util/request.js');
 const url = require('../info/url.js');
 const db = require('./db.js');

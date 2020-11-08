@@ -27,11 +27,11 @@ module.exports = {
     return `${API}/complexes/overview/${complexNo}?complexNo=${complexNo}`;
   },
   */
-  getApts(complexNo = '') {
+  getArticles(complexNo = '') {
     // 아파트 매물 목록
     return `${API}/articles/complex/${complexNo}`;
   },
-  getApt(articleNo = '') {
+  getArticle(articleNo = '') {
     // 아파트 매물 상세
     return `${API}/articles/${articleNo}`;
   },

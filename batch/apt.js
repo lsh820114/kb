@@ -1,10 +1,9 @@
 /**
- * -배치
+ *
  * 지역별 아파트 정보수집
  *
  */
 
-require('../util/initialize.js');
 const req = require('../util/request.js');
 const url = require('../info/url.js');
 const db = require('./db.js');
@@ -29,14 +28,14 @@ const updateApt = async (apts = []) => {
 };
 // 분양권 아파트 갱신 (완공후에 정보변경)
 const updateBunYangApt = async () => {
-  const apts = await db.getBunYangApt();
+  const apts = await db.getAbygByCity();
   updateApt(apts);
 };
 
 const run = async () => {
   // 1. 파주시 동목록 조회 (LIKE xxxx%)
   const cityNo = '4148000000';
-  const dongs = await db.getDongs(cityNo.substring(0, 4));
+  const dongs = await db.getDongs(cityNo);
   for (dong of dongs) {
     const cortarNo = dong.cortar_no;
     // 2. 해당 동에 있는 아파트 전체 조회
@@ -63,6 +62,6 @@ const run = async () => {
   }
   console.log('Batch End!');
 };
-// updateBunYangApt();
 
+// updateBunYangApt();
 // run();
