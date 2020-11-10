@@ -12,8 +12,20 @@ module.exports = {
           if (err) {
             reject(err);
           }
-          //console.log(body);
-          resolve(JSON.parse(body));
+          console.log(body);
+          try {
+            resolve(JSON.parse(body));
+          } catch (e) {
+            console.error('[URI]', uri);
+            console.error(
+              '------------------------------------------------------------------------------',
+            );
+            console.error('[Params]', params);
+            console.error(
+              '------------------------------------------------------------------------------',
+            );
+            reject(e);
+          }
         },
       );
     });

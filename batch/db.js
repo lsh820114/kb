@@ -134,6 +134,50 @@ module.exports = {
       console.log(e);
     }
   },
+  // 아파트 가격 저장
+  async savePrice(items) {
+    try {
+      const conn = await pool.getConnection();
+      const sql = `REPLACE INTO price (
+        complex_no,
+        pyeong_name,
+        trade_type,
+        filter_type,
+        complex_name,
+        cortar_no,
+        article_count,
+        min_price,
+        max_price,
+        avg,
+        median,
+        avg_low,
+        avg_high,
+        deviation
+      ) VALUES ?`;
+      const [rows] = await conn.query(sql, [
+        items.map((item) => [
+          item.complexNo,
+          item.pyeongName,
+          item.tradeType,
+          item.filterType,
+          item.complexName,
+          item.cortarNo,
+          item.articleCount,
+          item.minPrice,
+          item.maxPrice,
+          item.avg,
+          item.median,
+          item.avgLow,
+          item.avgHigh,
+          item.deviation,
+        ]),
+      ]);
+      conn.release();
+      console.log(`[Insert Price] ${rows.info}`);
+    } catch (e) {
+      console.log(e);
+    }
+  },
   // 지역 조회
   async getRegions(cortarType = 'city') {
     const conn = await pool.getConnection();

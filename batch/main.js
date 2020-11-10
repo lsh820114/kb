@@ -11,7 +11,12 @@ const url = require('../info/url.js');
 const db = require('./db.js');
 const moment = require('moment');
 const d3 = require('d3');
-const { scaleDivergingPow } = require('d3');
+
+const sleep = (time) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+};
 
 // 아파트 매물 목록
 const getArticlesReq = async (param, page = 1) => {
@@ -72,42 +77,50 @@ const getArticleParams = async (complexNo = '') => {
   return params;
 };
 
-// 매물 포함 제외 문자
-const excludeStr = ['세안고', '세끼고'];
-
-// 매물제외 조건
-const maxMonth = 3;
-const isExclude = (item) => {
-  // 즉시입주
-  if (item.moveInTypeCode === 'MV001') {
-    return false;
-  }
-  // n개월이내
-  else if (item.moveInTypeCode === 'MV002') {
-    if (item.moveInPossibleInMonthCount < maxMonth + 1) {
-      return false;
+// 매물 필터링
+const isExcludeArticle = (desc = null, article = null) => {
+  // 매물 포함 제외 문자
+  const excludeStr = ['세안고', '세끼고'];
+  if (desc) {
+    if (util.hasStr(excludeStr, desc)) {
+      return true;
     }
   }
-  // 협의가능
-  else if (item.moveInTypeCode === 'MV003') {
-    const toDate = moment(item.moveInPossibleAfterYM).endOf('month').format('YYYYMMDD');
-    const maxDate = moment().add(maxMonth, 'M').format('YYYYMMDD');
-    const result = moment(toDate).isBefore(maxDate);
-    // console.log(toDate, maxDate, result);
-    return !result;
+  if (!article) {
+    return false;
   }
-  return true;
-};
-const sleep = (time) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time);
-  });
+  // 최대 개월수
+  const maxMonth = 3;
+  if (article) {
+    if (article.moveInTypeCode === 'MV001') {
+      return false;
+    }
+    // n개월이내
+    else if (article.moveInTypeCode === 'MV002') {
+      if (article.moveInPossibleInMonthCount < maxMonth + 1) {
+        return false;
+      }
+    }
+    // 협의가능
+    else if (article.moveInTypeCode === 'MV003') {
+      const toDate = moment(article.moveInPossibleAfterYM).endOf('month').format('YYYYMMDD');
+      if (toDate.length !== 8) {
+        return true;
+      }
+      const maxDate = moment().add(maxMonth, 'M').format('YYYYMMDD');
+      const result = moment(toDate).isBefore(maxDate);
+      // console.log(toDate, maxDate, result);
+      return !result;
+    }
+    return true;
+  }
 };
 
 // 매물 조회
 const getArticles = async () => {
   const textList = [];
   const dataList = [];
+  let possibleCount = 0;
   // 1. 파주시에 있는 아파트 전체 조회
   const tradeType = 'A1'; // 매매
   // const cityNo = '4148000000'; // 파주시
@@ -122,75 +135,83 @@ const getArticles = async () => {
       param.tradeType = tradeType;
       let isMoreData = true;
       let articles = [];
-      let itemCount = 0;
       let priceAll = [];
+      let priceFilter = [];
       for (page of [1, 2, 3, 4, 5]) {
         if (isMoreData) {
           // 3. 해당 아파트의 매물 조회
           const result = await getArticlesReq(param, page);
           isMoreData = result.isMoreData;
           articles = [...articles, ...result.articleList];
-          await sleep(1000);
+          await sleep(500);
         }
       }
       for (article of articles) {
-        if (
-          (param.tradeType === 'A1' && !util.hasStr(excludeStr, article.articleFeatureDesc)) ||
-          param.tradeType === 'B1'
-        ) {
-          // 4. 매물 상세 조회
-          const articleNo = article.articleNo;
-          const item = await getArticleReq(articleNo);
-          if (!isExclude(item.articleDetail)) {
-            const priceStr = article.sameAddrMinPrc.split('억');
-            let price = 0;
-            if (priceStr.length > 1) {
-              price = Number(priceStr[0]) * 10000 + Number(priceStr[1].replace(',', '')) * 1;
-            } else {
-              price = Number(priceStr[0].replace(',', '')) * 1;
-            }
-            priceAll.push(price);
-            itemCount++;
-          }
-          await sleep(1000);
+        // 4. 매물 상세 조회
+        const articleNo = article.articleNo;
+        const priceStr = article.dealOrWarrantPrc.split('억');
+        let price = 0;
+        if (priceStr.length > 1) {
+          price = Number(priceStr[0]) * 10000 + Number(priceStr[1].replace(',', '')) * 1;
+        } else {
+          price = Number(priceStr[0].replace(',', '')) * 1;
         }
+        // 3개월이내 실입주 가능한 매물만 필터링
+        const item = await getArticleReq(articleNo);
+        if (
+          param.tradeType === 'A1' &&
+          !isExcludeArticle(article.articleFeatureDesc, item.articleDetail)
+        ) {
+          priceFilter.push(price);
+        }
+        priceAll.push(price);
+        await sleep(1000);
       }
-      const minPrice = d3.min(priceAll);
-      const maxPrice = d3.max(priceAll);
-      const avgPrice = util.mathFloor(d3.mean(priceAll));
-      const medianPrice = d3.median(priceAll);
-      const quantileLowPrice = util.mathFloor(d3.quantile(priceAll, 0.25));
-      const quantileHighPrice = util.mathFloor(d3.quantile(priceAll, 0.75));
-      // const deviationPrice = util.mathFloor(d3.deviation(priceAll));
+      let filterVo = {};
+      [priceAll, priceFilter].forEach((p, index) => {
+        const minPrice = d3.min(p);
+        const maxPrice = d3.max(p);
+        const avg = util.mathFloor(d3.mean(p));
+        const median = d3.median(p);
+        const avgLow = util.mathFloor(d3.quantile(p, 0.25));
+        const avgHigh = util.mathFloor(d3.quantile(p, 0.75));
+        const deviation = util.mathFloor(d3.deviation(p));
+        const vo = {
+          complexNo: param.complexNo,
+          pyeongName: param.py,
+          tradeType: param.tradeType,
+          filterType: index === 0 ? 'ALL' : 'POSSIBLE',
+          complexName: apt.complex_name,
+          cortarNo: apt.cortar_no,
+          articleCount: p.length,
+          minPrice,
+          maxPrice,
+          avg,
+          median,
+          avgLow,
+          avgHigh,
+          deviation,
+        };
+        if (index > 0) {
+          filterVo = vo;
+          possibleCount += filterVo.articleCount;
+        }
+        dataList.push(vo);
+      });
 
       textList.push('------------------------------------------------------------');
-      textList.push(`${param.name}(${param.py}평)`);
-      textList.push('매물수: ' + itemCount);
-      if (itemCount > 0) {
-        textList.push(`가격: ${util.addComma(minPrice)} ~ ${util.addComma(maxPrice)}`);
-        textList.push('평균값: ' + util.addComma(avgPrice));
-        textList.push('중앙값: ' + util.addComma(medianPrice));
-        textList.push('하위평균값: ' + util.addComma(quantileLowPrice));
-        textList.push('상위평균값: ' + util.addComma(quantileHighPrice));
-        // textList.push('표준편차: ' + util.addComma(deviationPrice));
+      textList.push(`${param.name}(${filterVo.pyeongName}평)`);
+      textList.push('매물수: ' + filterVo.articleCount);
+      if (priceFilter.length > 0) {
+        textList.push(
+          `가격: ${util.addComma(filterVo.minPrice)} ~ ${util.addComma(filterVo.maxPrice)}`,
+        );
+        textList.push('평균값: ' + util.addComma(filterVo.avg));
+        textList.push('중앙값: ' + util.addComma(filterVo.median));
+        textList.push('하위평균값: ' + util.addComma(filterVo.avgLow));
+        textList.push('상위평균값: ' + util.addComma(filterVo.avgHigh));
+        // textList.push('표준편차: ' + util.addComma(filterVo.deviation));
       }
-      // Create data
-      /*
-      const data = [
-        param.name,
-        param.py,
-        param.complexNo,
-        param.areaNos,
-        param.tradeType,
-        itemCount,
-        minPrice || 0,
-        maxPrice || 0,
-        avgPrice || 0,
-        medianPrice || 0,
-        util.getToday().replaceAll('-', ''),
-      ];
-      dataList.push(data);
-      */
     }
   }
 
@@ -199,6 +220,8 @@ const getArticles = async () => {
     text += t + '\n';
   });
   console.log(text);
+  //db.savePrice(dataList);
+  console.log(`[End] PossibleCount: ${possibleCount}`);
 };
 
 getArticles();
