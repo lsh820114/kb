@@ -125,7 +125,7 @@ const getArticles = async () => {
   const tradeType = 'A1'; // 매매
   // const cityNo = '4148000000'; // 파주시
   // const apts = await db.getAptsByCity(cityNo);
-  const cityNo = '4148011700';
+  const cityNo = '4148010800';
   const apts = await db.getAptsByDong(cityNo);
   for (apt of apts) {
     const complexNo = apt.complex_no;
