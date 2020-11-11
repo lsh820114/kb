@@ -11,6 +11,7 @@ const pool = mysql.createPool({
   user: 'babel',
   password: 'babel000',
   connectionLimit: 5,
+  multipleStatements: true,
 });
 const getConnection = async () => {
   return await pool.getConnection(async (conn) => conn);

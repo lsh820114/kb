@@ -4,6 +4,7 @@
  *
  */
 
+const mysql = require('mysql2/promise');
 const pool = require('../db/pool.js');
 
 module.exports = {
@@ -139,12 +140,14 @@ module.exports = {
     try {
       const conn = await pool.getConnection();
       const sql = `REPLACE INTO price (
+        ymd,
+        trade_type,
         complex_no,
         pyeong_name,
-        trade_type,
         filter_type,
         complex_name,
         cortar_no,
+        area_nos,
         article_count,
         min_price,
         max_price,
@@ -152,16 +155,19 @@ module.exports = {
         median,
         avg_low,
         avg_high,
-        deviation
+        deviation,
+        update_yn
       ) VALUES ?`;
       const [rows] = await conn.query(sql, [
         items.map((item) => [
+          item.ymd,
+          item.tradeType,
           item.complexNo,
           item.pyeongName,
-          item.tradeType,
           item.filterType,
           item.complexName,
           item.cortarNo,
+          item.areaNos,
           item.articleCount,
           item.minPrice,
           item.maxPrice,
@@ -170,6 +176,7 @@ module.exports = {
           item.avgLow,
           item.avgHigh,
           item.deviation,
+          item.updateYn,
         ]),
       ]);
       conn.release();
@@ -177,6 +184,62 @@ module.exports = {
     } catch (e) {
       console.log(e);
     }
+  },
+  // 아파트 가격 업데이트
+  async updatePrice(items) {
+    try {
+      const conn = await pool.getConnection();
+      let sqls = '';
+      let sql = '';
+      sql += 'UPDATE price SET ';
+      sql += 'article_count = ?,';
+      sql += ' min_price = ?,';
+      sql += ' max_price = ?,';
+      sql += ' avg = ?,';
+      sql += ' median = ?,';
+      sql += ' avg_low = ?,';
+      sql += ' avg_high = ?,';
+      sql += ' deviation = ?,';
+      sql += ' update_yn = ?';
+      sql += ' WHERE';
+      sql += ' ymd = ?';
+      sql += ' and trade_type = ?';
+      sql += ' and complex_no = ?';
+      sql += ' and pyeong_name = ?';
+      sql += ' and filter_type = ?;';
+      items.forEach((item) => {
+        const params = [
+          item.articleCount,
+          item.minPrice,
+          item.maxPrice,
+          item.avg,
+          item.median,
+          item.avgLow,
+          item.avgHigh,
+          item.deviation,
+          item.updateYn,
+          item.ymd,
+          item.tradeType,
+          item.complexNo,
+          item.pyeongName,
+          item.filterType,
+        ];
+        sqls += mysql.format(sql, params);
+      });
+      const [rows] = await conn.query(sqls);
+      conn.release();
+      console.log(`[Update Price] ${rows.length}rows`);
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  // 가격 조회
+  async getPrice(ymd = '', tradeType = '') {
+    const conn = await pool.getConnection();
+    const sql = `SELECT * FROM price WHERE ymd = '${ymd}' AND trade_type = '${tradeType}' AND filter_type = 'ALL' AND update_yn = 'N' ORDER BY cortar_no`;
+    const [rows] = await conn.query(sql);
+    conn.release();
+    return rows;
   },
   // 지역 조회
   async getRegions(cortarType = 'city') {

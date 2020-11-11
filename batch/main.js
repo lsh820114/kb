@@ -43,7 +43,7 @@ const getArticlesReq = async (param, page = 1) => {
     page,
     complexNo: param.complexNo,
     buildingNos: '',
-    areaNos: param.areaNos.join(':'),
+    areaNos: param.areaNos,
     type: 'list',
     order: 'prc',
   });
@@ -116,23 +116,86 @@ const isExcludeArticle = (desc = null, article = null) => {
   }
 };
 
-// 매물 조회
-const getArticles = async () => {
-  const textList = [];
+// 전역 정보
+const tradeTypes = ['A1']; // 매매
+const cityNo = '4148000000'; // 파주시
+const ymd = moment().format('YYYYMMDD');
+
+// 매물 기본값 등록
+const saveArticleDefault = async () => {
   const dataList = [];
-  let possibleCount = 0;
   // 1. 파주시에 있는 아파트 전체 조회
-  const tradeType = 'A1'; // 매매
-  // const cityNo = '4148000000'; // 파주시
-  // const apts = await db.getAptsByCity(cityNo);
-  const cityNo = '4148010800';
-  const apts = await db.getAptsByDong(cityNo);
+  const apts = await db.getAptsByCity(cityNo);
+  if (apts.length === 0) {
+    console.log('Empty Apt!');
+    return;
+  }
   for (apt of apts) {
     const complexNo = apt.complex_no;
     // 2. 해당 아파트의 파라미터 생성(평형별)
     const params = await getArticleParams(complexNo);
     for (param of params) {
-      param.tradeType = tradeType;
+      for (tradeType of tradeTypes) {
+        const vo = {
+          ymd,
+          tradeType,
+          complexNo: param.complexNo,
+          pyeongName: param.py,
+          filterType: 'ALL',
+          complexName: apt.complex_name,
+          cortarNo: apt.cortar_no,
+          areaNos: param.areaNos.join(':'),
+          articleCount: 0,
+          minPrice: 0,
+          maxPrice: 0,
+          avg: 0,
+          median: 0,
+          avgLow: 0,
+          avgHigh: 0,
+          deviation: 0,
+          updateYn: 'N',
+        };
+        dataList.push(vo);
+        if (tradeType === 'A1') {
+          const filterVo = {
+            ymd,
+            tradeType,
+            complexNo: param.complexNo,
+            pyeongName: param.py,
+            filterType: 'POSSIBLE',
+            complexName: apt.complex_name,
+            cortarNo: apt.cortar_no,
+            areaNos: param.areaNos.join(':'),
+            articleCount: 0,
+            minPrice: 0,
+            maxPrice: 0,
+            avg: 0,
+            median: 0,
+            avgLow: 0,
+            avgHigh: 0,
+            deviation: 0,
+            updateYn: 'N',
+          };
+          dataList.push(filterVo);
+        }
+      }
+    }
+  }
+  await db.savePrice(dataList);
+};
+
+// 매물 가격 업데이트
+const updateArticles = async () => {
+  // 1. 매매/전세/월세
+  for (tradeType of tradeTypes) {
+    // 2. 업데이트할 아파트 조회
+    const complexs = await db.getPrice(ymd, tradeType);
+    if (complexs.length === 0) {
+      console.log('Empty complex!');
+    }
+    let n = 1;
+    for (complex of complexs) {
+      console.debug(`${n} of ${complexs.length}...`);
       let isMoreData = true;
       let articles = [];
       let priceAll = [];
@@ -140,10 +203,17 @@ const getArticles = async () => {
       for (page of [1, 2, 3, 4, 5]) {
         if (isMoreData) {
           // 3. 해당 아파트의 매물 조회
-          const result = await getArticlesReq(param, page);
+          const result = await getArticlesReq(
+            {
+              complexNo: complex.complex_no,
+              tradeType: complex.trade_type,
+              areaNos: complex.area_nos,
+            },
+            page,
+          );
           isMoreData = result.isMoreData;
           articles = [...articles, ...result.articleList];
-          await sleep(500);
+          await sleep(1000);
         }
       }
       for (article of articles) {
@@ -159,30 +229,29 @@ const getArticles = async () => {
         // 3개월이내 실입주 가능한 매물만 필터링
         const item = await getArticleReq(articleNo);
         if (
-          param.tradeType === 'A1' &&
+          complex.trade_type === 'A1' &&
           !isExcludeArticle(article.articleFeatureDesc, item.articleDetail)
         ) {
           priceFilter.push(price);
         }
         priceAll.push(price);
-        await sleep(1000);
+        await sleep(2000);
       }
-      let filterVo = {};
+      const dataList = [];
       [priceAll, priceFilter].forEach((p, index) => {
-        const minPrice = d3.min(p);
-        const maxPrice = d3.max(p);
+        const minPrice = d3.min(p) || 0;
+        const maxPrice = d3.max(p) || 0;
         const avg = util.mathFloor(d3.mean(p));
-        const median = d3.median(p);
+        const median = d3.median(p) || 0;
         const avgLow = util.mathFloor(d3.quantile(p, 0.25));
         const avgHigh = util.mathFloor(d3.quantile(p, 0.75));
         const deviation = util.mathFloor(d3.deviation(p));
         const vo = {
-          complexNo: param.complexNo,
-          pyeongName: param.py,
-          tradeType: param.tradeType,
+          ymd: complex.ymd,
+          tradeType: complex.trade_type,
+          complexNo: complex.complex_no,
+          pyeongName: complex.pyeong_name,
           filterType: index === 0 ? 'ALL' : 'POSSIBLE',
-          complexName: apt.complex_name,
-          cortarNo: apt.cortar_no,
           articleCount: p.length,
           minPrice,
           maxPrice,
@@ -191,37 +260,18 @@ const getArticles = async () => {
           avgLow,
           avgHigh,
           deviation,
+          updateYn: 'Y',
         };
-        if (index > 0) {
-          filterVo = vo;
-          possibleCount += filterVo.articleCount;
-        }
         dataList.push(vo);
       });
-
-      textList.push('------------------------------------------------------------');
-      textList.push(`${param.name}(${filterVo.pyeongName}평)`);
-      textList.push('매물수: ' + filterVo.articleCount);
-      if (priceFilter.length > 0) {
-        textList.push(
-          `가격: ${util.addComma(filterVo.minPrice)} ~ ${util.addComma(filterVo.maxPrice)}`,
-        );
-        textList.push('평균값: ' + util.addComma(filterVo.avg));
-        textList.push('중앙값: ' + util.addComma(filterVo.median));
-        textList.push('하위평균값: ' + util.addComma(filterVo.avgLow));
-        textList.push('상위평균값: ' + util.addComma(filterVo.avgHigh));
-        // textList.push('표준편차: ' + util.addComma(filterVo.deviation));
-      }
+      await db.updatePrice(dataList);
+      n++;
     }
   }
-
-  let text = '';
-  textList.forEach((t) => {
-    text += t + '\n';
-  });
-  console.log(text);
-  //db.savePrice(dataList);
-  console.log(`[End] PossibleCount: ${possibleCount}`);
 };
-
-getArticles();
+/*
+saveArticleDefault().then((result) => {
+  updateArticles();
+});
+*/
+updateArticles();

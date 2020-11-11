@@ -12,7 +12,7 @@ module.exports = {
           if (err) {
             reject(err);
           }
-          console.log(body);
+          // console.log(body);
           try {
             resolve(JSON.parse(body));
           } catch (e) {
