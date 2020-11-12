@@ -135,7 +135,61 @@ module.exports = {
       console.log(e);
     }
   },
-  // 아파트 가격 저장
+  // 아파트 평형별 저장
+  async saveAptPyeong(items) {
+    try {
+      const conn = await pool.getConnection();
+      const sql = `REPLACE INTO apt_pyeong (
+        complex_no,
+        pyeong_name,
+        complex_name,
+        real_estate_type_code,
+        cortar_no,
+        area_nos
+      ) VALUES ?`;
+      const [rows] = await conn.query(sql, [
+        items.map((item) => [
+          item.complexNo,
+          item.pyeongName,
+          item.complexName,
+          item.realEstateTypeCode,
+          item.cortarNo,
+          item.areaNos,
+        ]),
+      ]);
+      conn.release();
+      console.log(`[Insert AptPyeong] ${rows.info}`);
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  // 아파트 평형별 매물수집 이력 저장
+  async saveAptArticleHist(items) {
+    try {
+      const conn = await pool.getConnection();
+      const sql = `REPLACE INTO apt_article_hist (
+        ymd,
+        trade_type,
+        complex_no,
+        pyeong_name,
+        update_yn
+      ) VALUES ?`;
+      const [rows] = await conn.query(sql, [
+        items.map((item) => [
+          item.ymd,
+          item.tradeType,
+          item.complexNo,
+          item.pyeongName,
+          item.updateYn,
+        ]),
+      ]);
+      conn.release();
+      console.log(`[Insert AptArticleHist] ${rows.info}`);
+    } catch (e) {
+      console.log(e);
+    }
+  },
+  // FIXME:아파트 가격 저장
   async savePrice(items) {
     try {
       const conn = await pool.getConnection();
@@ -185,7 +239,7 @@ module.exports = {
       console.log(e);
     }
   },
-  // 아파트 가격 업데이트
+  // FIXME:아파트 가격 업데이트
   async updatePrice(items) {
     try {
       const conn = await pool.getConnection();
@@ -233,10 +287,12 @@ module.exports = {
       console.log(e);
     }
   },
-  // 가격 조회
-  async getPrice(ymd = '', tradeType = '') {
+  // 아파트매물이력 조회
+  async getAptArticleHist(ymd = '') {
     const conn = await pool.getConnection();
-    const sql = `SELECT * FROM price WHERE ymd = '${ymd}' AND trade_type = '${tradeType}' AND filter_type = 'ALL' AND update_yn = 'N' ORDER BY cortar_no`;
+    const sql = `SELECT a.*,
+    (SELECT area_nos FROM apt_pyeong WHERE complex_no = a.complex_no AND pyeong_name = a.pyeong_name) AS area_nos
+    FROM apt_article_hist a WHERE a.ymd = '${ymd}' AND a.update_yn = 'N' ORDER BY a.complex_no`;
     const [rows] = await conn.query(sql);
     conn.release();
     return rows;
@@ -275,6 +331,14 @@ module.exports = {
   async getAbygByDong(cortarNo = '') {
     return await this.getApts(cortarNo, 'sec', 'ABYG');
   },
+  // 아파트평형별 구/시 단위로 조회
+  async getAptPyeongByCity(cortarNo = '') {
+    return await this.getApts(cortarNo, 'dvsn', 'APT', 'apt_pyeong');
+  },
+  // 아파트평형별 동 단위로 조회
+  async getAptPyeongByDong(cortarNo = '') {
+    return await this.getApts(cortarNo, 'sec', 'APT', 'apt_pyeong');
+  },
   /**
    * 아파트 조회
    * @param {*} cortarNo
@@ -282,9 +346,9 @@ module.exports = {
    * 'dvsn': 구/시 단위로 조회
    * 'sec': 동 단위로 조회
    */
-  async getApts(cortarNo = '', cortarType = 'dvsn', realEstateTypeCode = '') {
+  async getApts(cortarNo = '', cortarType = 'dvsn', realEstateTypeCode = '', tableName = 'apt') {
     const conn = await pool.getConnection();
-    let sql = `SELECT * FROM apt`;
+    let sql = `SELECT * FROM ${tableName}`;
     if (cortarNo) {
       sql += ` WHERE`;
       if (cortarType === 'dvsn') {
