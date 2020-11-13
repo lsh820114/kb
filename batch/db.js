@@ -189,54 +189,78 @@ module.exports = {
       console.log(e);
     }
   },
-  // FIXME:아파트 가격 저장
-  async savePrice(items) {
+  // 아파트 평형별 매물수집 이력 업데이트
+  async updateAptArticleHist(item) {
     try {
       const conn = await pool.getConnection();
-      const sql = `REPLACE INTO price (
+      const sql = `UPDATE apt_article_hist 
+      SET update_yn = 'Y'
+      WHERE
+            ymd = '${item.ymd}'
+        AND trade_type = '${item.trade_type}'
+        AND complex_no = '${item.complex_no}'
+        AND pyeong_name = '${item.pyeong_name}'`;
+      const [rows] = await conn.query(sql);
+      conn.release();
+      console.log(`[Update AptArticleHist] ${rows.info}`);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  },
+  // 매물 정보 저장
+  async saveArticles(items) {
+    try {
+      const conn = await pool.getConnection();
+      const sql = `REPLACE INTO article (
         ymd,
+        article_no,
+        article_name,
         trade_type,
         complex_no,
         pyeong_name,
-        filter_type,
-        complex_name,
+        pyeong_no,
         cortar_no,
-        area_nos,
-        article_count,
-        min_price,
-        max_price,
-        avg,
-        median,
-        avg_low,
-        avg_high,
-        deviation,
-        update_yn
+        price,
+        dong,
+        ho,
+        total_floor,
+        floor,
+        article_desc,
+        move_code,
+        move_month,
+        move_after_ym,
+        confirm_ymd
       ) VALUES ?`;
       const [rows] = await conn.query(sql, [
         items.map((item) => [
           item.ymd,
+          item.articleNo,
+          item.articleName,
           item.tradeType,
           item.complexNo,
           item.pyeongName,
-          item.filterType,
-          item.complexName,
+          item.pyeongNo,
           item.cortarNo,
-          item.areaNos,
-          item.articleCount,
-          item.minPrice,
-          item.maxPrice,
-          item.avg,
-          item.median,
-          item.avgLow,
-          item.avgHigh,
-          item.deviation,
-          item.updateYn,
+          item.price,
+          item.dong,
+          item.ho,
+          item.totalFloor,
+          item.floor,
+          item.articleDesc,
+          item.moveCode,
+          item.moveMonth,
+          item.moveAfterYM,
+          item.confirmYmd,
         ]),
       ]);
       conn.release();
-      console.log(`[Insert Price] ${rows.info}`);
+      console.log(`[Insert Articles: ${items[0].tradeType}] ${rows.info}`);
+      return true;
     } catch (e) {
       console.log(e);
+      return false;
     }
   },
   // FIXME:아파트 가격 업데이트

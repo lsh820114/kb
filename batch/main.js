@@ -57,7 +57,7 @@ const getArticleReq = async (articleNo = '') => {
 // 매물 필터링
 const isExcludeArticle = (desc = null, article = null) => {
   // 매물 포함 제외 문자
-  const excludeStr = ['세안고', '세끼고'];
+  const excludeStr = ['세안고', '세끼고', '전세', '월세'];
   if (desc) {
     if (util.hasStr(excludeStr, desc)) {
       return true;
@@ -94,10 +94,10 @@ const isExcludeArticle = (desc = null, article = null) => {
 };
 
 // 전역 정보
-const tradeTypes = ['A1']; // 매매
+const tradeTypes = ['B1']; // 매매
 const cityNo = '4148000000'; // 파주시
-// const ymd = moment().format('YYYYMMDD');
-const ymd = '20201112';
+//const ymd = moment().format('YYYYMMDD');
+const ymd = '20201113';
 
 // 아파트 평형별 매물수집 이력 등록
 const saveAptArticleHist = async () => {
@@ -162,24 +162,24 @@ const saveArticles = async () => {
         ymd,
         articleNo: article.articleNo,
         articleName: article.articleName,
-        tradeTypeCode: article.tradeTypeCode,
+        tradeType: article.tradeTypeCode,
         complexNo: item.articleDetail.hscpNo,
         pyeongName: apt.pyeong_name,
-        pyeongNo: item.articleDetail.ptpNo,
+        pyeongNo: Number(item.articleDetail.ptpNo),
         cortarNo: item.articleDetail.cortarNo,
         price: item.articlePrice.dealPrice,
         dong: item.articleDetail.originBuildingName,
         ho: item.landPrice.hoNm,
         totalFloor: item.articleFloor.totalFloorCount,
         floor: item.articleFloor.correspondingFloorCount,
-        desc: '',
+        articleDesc: '',
         moveCode: item.articleDetail.moveInTypeCode,
         moveMonth: '',
         moveAfterYM: '',
         confirmYmd: article.articleConfirmYmd,
       };
       if (article.articleFeatureDesc) {
-        vo.desc = article.articleFeatureDesc;
+        vo.articleDesc = article.articleFeatureDesc;
       }
       if (vo.moveCode === 'MV002') {
         if (item.articleDetail.moveInPossibleInMonthCount) {
@@ -194,15 +194,26 @@ const saveArticles = async () => {
       dataList.push(vo);
       await sleep(2000);
     }
-    // TODO:
-    // await db.saveArticles(dataList);
+    // 5. 매물 저장
+    if (dataList.length > 0) {
+      if (await db.saveArticles(dataList)) {
+        await db.updateAptArticleHist(apt);
+      } else {
+        console.error('[Error] Save Article!');
+        return;
+      }
+    } else {
+      if (!(await db.updateAptArticleHist(apt))) {
+        console.error('[Error] Update AptArticleHist!');
+        return;
+      }
+    }
     n++;
   }
-
   console.log('[End] saveArticles!');
 };
 
-//saveAptArticleHist();
+// saveAptArticleHist();
 saveArticles();
 
 // saveAptArticleHist().then((result) => {
