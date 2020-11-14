@@ -55,6 +55,7 @@ if (paramYmd) {
   run(paramYmd);
 } else {
   // 매일 자정 1분에 시작
+  console.log(`Start Batch: ${util.getToday()}`);
   const job = schedule.scheduleJob('0 1 0 * * ?', () => {
     startBatch(util.getToday());
   });
