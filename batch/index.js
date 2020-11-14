@@ -60,6 +60,6 @@ if (paramYmd) {
   // });
 }
 
-const job2 = schedule.scheduleJob('0 22 20 * * ?', () => {
+const job2 = schedule.scheduleJob('0 23 20 * * ?', () => {
   db.saveBatchHist('20201111');
 });
