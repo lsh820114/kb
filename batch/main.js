@@ -94,10 +94,10 @@ const isExcludeArticle = (desc = null, article = null) => {
 };
 
 // 전역 정보
-const tradeTypes = ['B1']; // 매매
+const tradeTypes = ['A1']; // 매매
 const cityNo = '4148000000'; // 파주시
-//const ymd = moment().format('YYYYMMDD');
-const ymd = '20201113';
+const ymd = moment().format('YYYYMMDD');
+// const ymd = '20201113';
 
 // 아파트 평형별 매물수집 이력 등록
 const saveAptArticleHist = async () => {
