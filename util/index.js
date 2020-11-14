@@ -1,3 +1,4 @@
+const moment = require('moment');
 module.exports = {
   addComma(number) {
     return number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';

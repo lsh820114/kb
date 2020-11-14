@@ -8,7 +8,6 @@ require('../util/initialize.js');
 const util = require('../util/index.js');
 const db = require('./db.js');
 const article = require('./article.js');
-const moment = require('moment');
 const schedule = require('node-schedule');
 
 // 전역 정보
