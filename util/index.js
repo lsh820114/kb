@@ -8,9 +8,14 @@ module.exports = {
     });
   },
   getToday() {
-    return new Date().toISOString().substring(0, 10);
+    return moment().format('YYYYMMDD');
   },
   mathFloor(num = 0) {
     return Math.floor(num / 100) * 100;
+  },
+  sleep(time) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
   },
 };

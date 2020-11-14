@@ -23,9 +23,8 @@ const save = async (cortarType = '') => {
   }
 };
 
-// 1.시/도
-// save();
-// 2.시/군/구
-// save('city');
-// 3.읍/면/동
-// save('dvsn');
+/*
+save(); // 1.시/도
+save('city'); // 2.시/군/구
+save('dvsn'); // 3.읍/면/동
+*/

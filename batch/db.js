@@ -27,9 +27,8 @@ module.exports = {
   },
   // 아파트 저장
   async saveApt(items) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `REPLACE INTO apt (
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO apt (
         complex_no,
         complex_name,
         cortar_no,
@@ -55,45 +54,41 @@ module.exports = {
         road_address_prefix,
         road_address
       ) VALUES ?`;
-      const [rows] = await conn.query(sql, [
-        items.map((item) => [
-          item.complexNo,
-          item.complexName,
-          item.cortarNo,
-          item.realEstateTypeCode,
-          item.realEstateTypeName,
-          item.totalHouseholdCount,
-          item.totalDongCount,
-          item.highFloor,
-          item.lowFloor,
-          item.useApproveYmd,
-          item.minSupplyArea,
-          item.maxSupplyArea,
-          item.parkingPossibleCount,
-          item.parkingCountByHousehold,
-          item.constructionCompanyName,
-          item.pyoengNames,
-          item.latitude,
-          item.longitude,
-          item.batlRatio,
-          item.btlRatio,
-          item.address,
-          item.detailAddress,
-          item.roadAddressPrefix,
-          item.roadAddress,
-        ]),
-      ]);
-      conn.release();
-      console.log(`[Insert Apts] ${rows.info}`);
-    } catch (e) {
-      console.log(e);
-    }
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.complexNo,
+        item.complexName,
+        item.cortarNo,
+        item.realEstateTypeCode,
+        item.realEstateTypeName,
+        item.totalHouseholdCount,
+        item.totalDongCount,
+        item.highFloor,
+        item.lowFloor,
+        item.useApproveYmd,
+        item.minSupplyArea,
+        item.maxSupplyArea,
+        item.parkingPossibleCount,
+        item.parkingCountByHousehold,
+        item.constructionCompanyName,
+        item.pyoengNames,
+        item.latitude,
+        item.longitude,
+        item.batlRatio,
+        item.btlRatio,
+        item.address,
+        item.detailAddress,
+        item.roadAddressPrefix,
+        item.roadAddress,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Insert Apts] ${rows.info}`);
   },
   // 아파트 평 저장
   async savePyeong(items) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `REPLACE INTO pyeong (
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO pyeong (
         complex_no,
         pyeong_no,
         supply_area_double,
@@ -110,36 +105,32 @@ module.exports = {
         room_count,
         bath_room_count
       ) VALUES ?`;
-      const [rows] = await conn.query(sql, [
-        items.map((item) => [
-          item.complexNo,
-          item.pyeongNo,
-          item.supplyAreaDouble,
-          item.supplyArea,
-          item.pyeongName,
-          item.supplyPyeong,
-          item.pyeongName2,
-          item.exclusiveArea,
-          item.exclusivePyeong,
-          item.householdCountByPyeong,
-          item.realEstateTypeCode,
-          item.exclusiveRate,
-          item.entranceType,
-          item.roomCnt,
-          item.bathroomCnt,
-        ]),
-      ]);
-      conn.release();
-      console.log(`[Insert Pyeongs] ${rows.info}`);
-    } catch (e) {
-      console.log(e);
-    }
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.complexNo,
+        item.pyeongNo,
+        item.supplyAreaDouble,
+        item.supplyArea,
+        item.pyeongName,
+        item.supplyPyeong,
+        item.pyeongName2,
+        item.exclusiveArea,
+        item.exclusivePyeong,
+        item.householdCountByPyeong,
+        item.realEstateTypeCode,
+        item.exclusiveRate,
+        item.entranceType,
+        item.roomCnt,
+        item.bathroomCnt,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Insert Pyeongs] ${rows.info}`);
   },
   // 아파트 평형별 저장
   async saveAptPyeong(items) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `REPLACE INTO apt_pyeong (
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO apt_pyeong (
         complex_no,
         pyeong_name,
         complex_name,
@@ -147,73 +138,59 @@ module.exports = {
         cortar_no,
         area_nos
       ) VALUES ?`;
-      const [rows] = await conn.query(sql, [
-        items.map((item) => [
-          item.complexNo,
-          item.pyeongName,
-          item.complexName,
-          item.realEstateTypeCode,
-          item.cortarNo,
-          item.areaNos,
-        ]),
-      ]);
-      conn.release();
-      console.log(`[Insert AptPyeong] ${rows.info}`);
-    } catch (e) {
-      console.log(e);
-    }
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.complexNo,
+        item.pyeongName,
+        item.complexName,
+        item.realEstateTypeCode,
+        item.cortarNo,
+        item.areaNos,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Insert AptPyeong] ${rows.info}`);
   },
   // 아파트 평형별 매물수집 이력 저장
   async saveAptArticleHist(items) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `REPLACE INTO apt_article_hist (
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO apt_article_hist (
         ymd,
         trade_type,
         complex_no,
         pyeong_name,
         update_yn
       ) VALUES ?`;
-      const [rows] = await conn.query(sql, [
-        items.map((item) => [
-          item.ymd,
-          item.tradeType,
-          item.complexNo,
-          item.pyeongName,
-          item.updateYn,
-        ]),
-      ]);
-      conn.release();
-      console.log(`[Insert AptArticleHist] ${rows.info}`);
-    } catch (e) {
-      console.log(e);
-    }
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.ymd,
+        item.tradeType,
+        item.complexNo,
+        item.pyeongName,
+        item.updateYn,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Insert AptArticleHist] ${rows.info}`);
   },
   // 아파트 평형별 매물수집 이력 업데이트
   async updateAptArticleHist(item) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `UPDATE apt_article_hist 
+    const conn = await pool.getConnection();
+    const sql = `UPDATE apt_article_hist 
       SET update_yn = 'Y'
       WHERE
             ymd = '${item.ymd}'
         AND trade_type = '${item.trade_type}'
         AND complex_no = '${item.complex_no}'
         AND pyeong_name = '${item.pyeong_name}'`;
-      const [rows] = await conn.query(sql);
-      conn.release();
-      console.log(`[Update AptArticleHist] ${rows.info}`);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
+    const [rows] = await conn.query(sql);
+    conn.release();
+    console.log(`[Update AptArticleHist] ${rows.info}`);
   },
   // 매물 정보 저장
   async saveArticles(items) {
-    try {
-      const conn = await pool.getConnection();
-      const sql = `REPLACE INTO article (
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO article (
         ymd,
         article_no,
         article_name,
@@ -233,35 +210,30 @@ module.exports = {
         move_after_ym,
         confirm_ymd
       ) VALUES ?`;
-      const [rows] = await conn.query(sql, [
-        items.map((item) => [
-          item.ymd,
-          item.articleNo,
-          item.articleName,
-          item.tradeType,
-          item.complexNo,
-          item.pyeongName,
-          item.pyeongNo,
-          item.cortarNo,
-          item.price,
-          item.dong,
-          item.ho,
-          item.totalFloor,
-          item.floor,
-          item.articleDesc,
-          item.moveCode,
-          item.moveMonth,
-          item.moveAfterYM,
-          item.confirmYmd,
-        ]),
-      ]);
-      conn.release();
-      console.log(`[Insert Articles: ${items[0].tradeType}] ${rows.info}`);
-      return true;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.ymd,
+        item.articleNo,
+        item.articleName,
+        item.tradeType,
+        item.complexNo,
+        item.pyeongName,
+        item.pyeongNo,
+        item.cortarNo,
+        item.price,
+        item.dong,
+        item.ho,
+        item.totalFloor,
+        item.floor,
+        item.articleDesc,
+        item.moveCode,
+        item.moveMonth,
+        item.moveAfterYM,
+        item.confirmYmd,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Insert Articles: ${items[0].tradeType}] ${rows.info}`);
   },
   // FIXME:아파트 가격 업데이트
   async updatePrice(items) {
@@ -404,5 +376,46 @@ module.exports = {
     const [rows] = await conn.query(sql, [complexNo]);
     conn.release();
     return rows;
+  },
+
+  /**
+   *
+   * 배치
+   *
+   */
+  // 배치 이력 조회
+  async getBatchHist(ymd) {
+    const conn = await pool.getConnection();
+    let sql = `SELECT ymd, status, start_dt, end_dt, error_cnt FROM batch_hist WHERE ymd = ${ymd}`;
+    const [rows] = await conn.query(sql);
+    conn.release();
+    return rows;
+  },
+
+  // 배치 이력 저장
+  async saveBatchHist(ymd, status = 'START') {
+    const conn = await pool.getConnection();
+    const sql = `INSERT INTO batch_hist (ymd, status, start_dt) VALUES ('${ymd}', '${status}', now())`;
+    const [rows] = await conn.query(sql);
+    conn.release();
+    console.log(`[Save BatchHist] ${rows.info}`);
+  },
+
+  // 배치 이력 업데이트
+  async updateBatchHist(ymd, status) {
+    const conn = await pool.getConnection();
+    let sql = `UPDATE batch_hist SET status = '${status}'`;
+    if (status === 'START') {
+      sql += ',start_dt = now()';
+    } else {
+      sql += ',end_dt = now()';
+      if (status === 'ERROR') {
+        sql += ',error_cnt = error_cnt + 1';
+      }
+    }
+    sql += ` WHERE ymd = '${ymd}'`;
+    const [rows] = await conn.query(sql);
+    conn.release();
+    console.log(`[Update BatchHist] ${rows.info}`);
   },
 };
