@@ -10,7 +10,8 @@ const util = require('../util/index.js');
 const url = require('../info/url.js');
 const db = require('./db.js');
 const moment = require('moment');
-const d3 = require('d3');
+const schedule = require('node-schedule');
+// const d3 = require('d3');
 
 const sleep = (time) => {
   return new Promise((resolve) => {
@@ -94,10 +95,9 @@ const isExcludeArticle = (desc = null, article = null) => {
 };
 
 // 전역 정보
-const tradeTypes = ['A1']; // 매매
 const cityNo = '4148000000'; // 파주시
-const ymd = moment().format('YYYYMMDD');
-// const ymd = '20201113';
+let tradeTypes = process.argv[3] ? process.argv[3].split(',') : ['A1', 'B1']; // 매매
+let ymd = process.argv[2] || moment().format('YYYYMMDD');
 
 // 아파트 평형별 매물수집 이력 등록
 const saveAptArticleHist = async () => {
@@ -190,7 +190,7 @@ const saveArticles = async () => {
           vo.moveAfterYM = item.articleDetail.moveInPossibleAfterYM;
         }
       }
-      console.log('vo', vo);
+      //console.log('vo', vo);
       dataList.push(vo);
       await sleep(2000);
     }
@@ -219,3 +219,10 @@ saveArticles();
 // saveAptArticleHist().then((result) => {
 //   saveArticles();
 // });
+/*
+const cron = '0 0 1 * * ?';
+const job = schedule.scheduleJob('0 0/1 * * * ?', () => {
+  console.log('haha');
+});
+*/
+// job.cancel();
