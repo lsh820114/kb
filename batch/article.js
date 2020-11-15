@@ -96,7 +96,7 @@ module.exports = {
     // 1. 파주시에 있는 아파트평형별 전체 조회
     const apts = await db.getAptPyeongByCity(cityNo);
     if (apts.length === 0) {
-      console.log('Empty Apt!');
+      console.error('Empty Apt!');
       return;
     }
     for (apt of apts) {
@@ -120,7 +120,7 @@ module.exports = {
       // 1. 업데이트할 아파트 조회
       const apts = await db.getAptArticleHist(ymd);
       if (apts.length === 0) {
-        console.log('Empty Apts!');
+        console.error('Empty Apts!');
         return;
       }
       let n = 1;
@@ -159,7 +159,12 @@ module.exports = {
             pyeongName: apt.pyeong_name,
             pyeongNo: Number(item.articleDetail.ptpNo),
             cortarNo: item.articleDetail.cortarNo,
-            price: item.articlePrice.dealPrice,
+            priceState: item.articleAddition.priceChangeState,
+            dealPrice: item.articlePrice.dealPrice,
+            warrantPrice: item.articlePrice.warrantPrice,
+            rentPrice: item.articlePrice.rentPrice,
+            allWarrantPrice: item.articlePrice.allWarrantPrice,
+            allRentPrice: item.articlePrice.allRentPrice,
             dong: item.articleDetail.originBuildingName,
             ho: item.landPrice.hoNm,
             totalFloor: item.articleFloor.totalFloorCount,

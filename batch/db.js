@@ -199,7 +199,12 @@ module.exports = {
         pyeong_name,
         pyeong_no,
         cortar_no,
-        price,
+        price_state,
+        deal_price,
+        warrant_price,
+        rent_price,
+        all_warrant_price,
+        all_rent_price,
         dong,
         ho,
         total_floor,
@@ -220,7 +225,12 @@ module.exports = {
         item.pyeongName,
         item.pyeongNo,
         item.cortarNo,
-        item.price,
+        item.priceState,
+        item.dealPrice,
+        item.warrantPrice,
+        item.rentPrice,
+        item.allWarrantPrice,
+        item.allRentPrice,
         item.dong,
         item.ho,
         item.totalFloor,
@@ -402,12 +412,12 @@ module.exports = {
   },
 
   // 배치 이력 업데이트
-  async updateBatchHist(ymd, status) {
+  async updateBatchHist(ymd, status, now = 'now') {
     const conn = await pool.getConnection();
     let sql = `UPDATE batch_hist SET status = '${status}'`;
-    if (status === 'START') {
+    if (status === 'START' && now === 'now') {
       sql += ',start_dt = now()';
-    } else {
+    } else if (status !== 'START') {
       sql += ',end_dt = now()';
       if (status === 'ERROR') {
         sql += ',error_cnt = error_cnt + 1';

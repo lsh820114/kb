@@ -13,7 +13,7 @@ const schedule = require('node-schedule');
 // 전역 정보
 const cityNo = '4148000000'; // 파주시
 let paramYmd = process.argv[2];
-let tradeTypes = process.argv[3] ? process.argv[3].split(',') : ['A1', 'B1', 'B2']; // 매매
+let tradeTypes = process.argv[3] ? process.argv[3].split(',') : ['A1', 'B1', 'B2'];
 let articleJob = null;
 
 const startBatch = async (ymd) => {
@@ -44,12 +44,12 @@ const run = async (ymd) => {
         return;
       }
       // 배치 재시작
-      db.updateBatchHist(ymd, 'START');
+      db.updateBatchHist(ymd, 'START', '');
       article.saveArticles(ymd);
     }
   }
 };
-
+/*
 if (paramYmd) {
   run(paramYmd);
 } else {
@@ -59,3 +59,10 @@ if (paramYmd) {
     startBatch(util.getToday());
   });
 }
+*/
+const test = async () => {
+  const ymd = util.getToday();
+  //await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
+  article.saveArticles(ymd);
+};
+test();
