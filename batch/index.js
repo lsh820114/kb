@@ -49,7 +49,7 @@ const run = async (ymd) => {
     }
   }
 };
-/*
+
 if (paramYmd) {
   run(paramYmd);
 } else {
@@ -59,10 +59,12 @@ if (paramYmd) {
     startBatch(util.getToday());
   });
 }
-*/
+
+/*
 const test = async () => {
   const ymd = util.getToday();
   //await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
   article.saveArticles(ymd);
 };
 test();
+*/
