@@ -166,6 +166,7 @@ module.exports = {
             allWarrantPrice: item.articlePrice.allWarrantPrice,
             allRentPrice: item.articlePrice.allRentPrice,
             dong: item.articleDetail.originBuildingName,
+            sameAddrCnt: article.sameAddrCnt,
             ho: item.landPrice.hoNm,
             totalFloor: item.articleFloor.totalFloorCount,
             floor: item.articleFloor.correspondingFloorCount,
