@@ -18,7 +18,7 @@ const save = async (cortarType = '') => {
     regions = await db.getRegions(cortarType);
   }
   for (item of regions) {
-    const result = await getData(item.cortar_no);
+    const result = await getData(item.cortarNo);
     await db.saveRegions(result.regionList);
   }
 };

@@ -13,13 +13,13 @@ const getArticleParams = async (complexNo = '') => {
   for (pyeong of pyeongs) {
     if (!o.hasOwnProperty(pyeong.py)) {
       o[pyeong.py] = {
-        name: pyeong.complex_name,
+        name: pyeong.complexName,
         py: pyeong.py,
-        complexNo: pyeong.complex_no,
-        areaNos: [pyeong.pyeong_no],
+        complexNo: pyeong.complexNo,
+        areaNos: [pyeong.pyeongNo],
       };
     } else {
-      o[pyeong.py].areaNos.push(pyeong.pyeong_no);
+      o[pyeong.py].areaNos.push(pyeong.pyeongNo);
     }
   }
   const params = [];
@@ -40,16 +40,16 @@ const run = async () => {
     return;
   }
   for (apt of apts) {
-    const complexNo = apt.complex_no;
+    const complexNo = apt.complexNo;
     // 2. 해당 아파트의 평형별 정보 설정
     const params = await getArticleParams(complexNo);
     for (param of params) {
       const vo = {
         complexNo: param.complexNo,
         pyeongName: param.py,
-        complexName: apt.complex_name,
-        realEstateTypeCode: apt.real_estate_type_code,
-        cortarNo: apt.cortar_no,
+        complexName: apt.complexName,
+        realEstateTypeCode: apt.realEstateTypeCode,
+        cortarNo: apt.cortarNo,
         areaNos: param.areaNos.join(':'),
       };
       dataList.push(vo);

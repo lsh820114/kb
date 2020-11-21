@@ -1,6 +1,6 @@
 /**
  *
- * 아파트 통계
+ * 아파트 매물 수집
  *
  */
 
@@ -9,49 +9,6 @@ const req = require('../util/request.js');
 const util = require('../util/index.js');
 const url = require('../info/url.js');
 const db = require('./db.js');
-
-/*
-const d3 = require('d3');
-
-// 매물 필터링
-const isExcludeArticle = (desc = null, article = null) => {
-  // 매물 포함 제외 문자
-  const excludeStr = ['세안고', '세끼고', '전세', '월세'];
-  if (desc) {
-    if (util.hasStr(excludeStr, desc)) {
-      return true;
-    }
-  }
-  if (!article) {
-    return false;
-  }
-  // 최대 개월수
-  const maxMonth = 3;
-  if (article) {
-    if (article.moveInTypeCode === 'MV001') {
-      return false;
-    }
-    // n개월이내
-    else if (article.moveInTypeCode === 'MV002') {
-      if (article.moveInPossibleInMonthCount < maxMonth + 1) {
-        return false;
-      }
-    }
-    // 협의가능
-    else if (article.moveInTypeCode === 'MV003') {
-      const toDate = moment(article.moveInPossibleAfterYM).endOf('month').format('YYYYMMDD');
-      if (toDate.length !== 8) {
-        return true;
-      }
-      const maxDate = moment().add(maxMonth, 'M').format('YYYYMMDD');
-      const result = moment(toDate).isBefore(maxDate);
-      // console.log(toDate, maxDate, result);
-      return !result;
-    }
-    return true;
-  }
-};
-*/
 
 // 아파트 매물 목록
 const getArticlesReq = async (param, page = 1) => {
@@ -105,9 +62,10 @@ module.exports = {
         const vo = {
           ymd,
           tradeType,
-          complexNo: apt.complex_no,
-          pyeongName: apt.pyeong_name,
+          complexNo: apt.complexNo,
+          pyeongName: apt.pyeongName,
           updateYn: 'N',
+          statsUpdateYn: 'N',
         };
         dataList.push(vo);
       }
@@ -133,9 +91,9 @@ module.exports = {
             // 2. 해당 아파트의 매물 조회
             const result = await getArticlesReq(
               {
-                complexNo: apt.complex_no,
-                tradeType: apt.trade_type,
-                areaNos: apt.area_nos,
+                complexNo: apt.complexNo,
+                tradeType: apt.tradeType,
+                areaNos: apt.areaNos,
               },
               page,
             );
@@ -156,7 +114,7 @@ module.exports = {
             articleName: article.articleName,
             tradeType: article.tradeTypeCode,
             complexNo: item.articleDetail.hscpNo,
-            pyeongName: apt.pyeong_name,
+            pyeongName: apt.pyeongName,
             pyeongNo: Number(item.articleDetail.ptpNo),
             cortarNo: item.articleDetail.cortarNo,
             priceState: item.articleAddition.priceChangeState,
@@ -175,6 +133,7 @@ module.exports = {
             moveMonth: '',
             moveAfterYM: '',
             confirmYmd: article.articleConfirmYmd,
+            filterType: '',
           };
           if (article.articleFeatureDesc) {
             vo.articleDesc = article.articleFeatureDesc;
@@ -188,7 +147,9 @@ module.exports = {
               vo.moveAfterYM = item.articleDetail.moveInPossibleAfterYM;
             }
           }
-          //console.log('vo', vo);
+          if (vo.tradeType === 'A1' && !util.isExcludeArticle(vo)) {
+            vo.filterType = 'POSSIBLE';
+          }
           dataList.push(vo);
           await util.sleep(2000);
         }
@@ -201,11 +162,11 @@ module.exports = {
         }
         n++;
       }
-      db.updateBatchHist(ymd, 'DONE');
+      db.updateBatchHist(ymd, 'ARTICLE', 'DONE');
       console.log('[End] saveArticles!');
     } catch (e) {
       console.error('[Error] saveArticles!');
-      db.updateBatchHist(ymd, 'ERROR');
+      db.updateBatchHist(ymd, 'ARTICLE', 'ERROR');
       return;
     }
   },

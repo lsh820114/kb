@@ -1,7 +1,7 @@
 /**
- *
- * 배치 메인
- *
+ * 배치메인
+ * - 1.매물정보 수집
+ * - 2.통계
  */
 
 require('../util/initialize.js');
@@ -18,9 +18,9 @@ let articleJob = null;
 
 const startBatch = async (ymd) => {
   // 배치 시작
-  const result = await db.getBatchHist(ymd);
+  const result = await db.getBatchHist(ymd, 'ARTICLE');
   if (result.length === 0) {
-    await db.saveBatchHist(ymd);
+    await db.saveBatchHist(ymd, 'ARTICLE');
     await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
     article.saveArticles(ymd);
     // 10분간격 재실행
@@ -32,10 +32,10 @@ const startBatch = async (ymd) => {
 
 // 미실행 반복
 const run = async (ymd) => {
-  const result = await db.getBatchHist(ymd);
+  const result = await db.getBatchHist(ymd, 'ARTICLE');
   if (result.length > 0) {
     const status = result[0].status;
-    const errorCnt = result[0].error_cnt;
+    const errorCnt = result[0].errorCnt;
     if (status === 'DONE') {
       articleJob.cancel();
     } else if (status === 'ERROR') {
@@ -44,7 +44,7 @@ const run = async (ymd) => {
         return;
       }
       // 배치 재시작
-      db.updateBatchHist(ymd, 'START', '');
+      db.updateBatchHist(ymd, 'ARTICLE', 'START', '');
       article.saveArticles(ymd);
     }
   }

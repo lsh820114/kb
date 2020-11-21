@@ -18,7 +18,7 @@ const getAptOverView = async (complexNo = '') => {
 const updateApt = async (apts = []) => {
   const aptAll = [];
   for (apt of apts) {
-    const aptInfo = await getAptOverView(apt.complex_no);
+    const aptInfo = await getAptOverView(apt.complexNo);
     aptAll.push(aptInfo.complexDetail);
   }
   console.log(aptAll);
@@ -38,7 +38,7 @@ const run = async () => {
   const cityNo = '4148000000';
   const dongs = await db.getDongs(cityNo);
   for (dong of dongs) {
-    const cortarNo = dong.cortar_no;
+    const cortarNo = dong.cortarNo;
     // 2. 해당 동에 있는 아파트 전체 조회
     const apts = await getAreaApts(cortarNo);
     const aptAll = [];

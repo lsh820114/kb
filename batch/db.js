@@ -6,6 +6,11 @@
 
 const mysql = require('mysql2/promise');
 const pool = require('../db/pool.js');
+const _ = require('lodash');
+
+const toCamelCase = (obj) => {
+  return _.mapKeys(obj, (v, k) => _.camelCase(k));
+};
 
 module.exports = {
   // 지역 저장
@@ -159,7 +164,8 @@ module.exports = {
         trade_type,
         complex_no,
         pyeong_name,
-        update_yn
+        update_yn,
+        stats_update_yn
       ) VALUES ?`;
     const [rows] = await conn.query(sql, [
       items.map((item) => [
@@ -168,21 +174,22 @@ module.exports = {
         item.complexNo,
         item.pyeongName,
         item.updateYn,
+        item.statsUpdateYn,
       ]),
     ]);
     conn.release();
     console.log(`[Insert AptArticleHist] ${rows.info}`);
   },
   // 아파트 평형별 매물수집 이력 업데이트
-  async updateAptArticleHist(item) {
+  async updateAptArticleHist(item, colName = 'update_yn') {
     const conn = await pool.getConnection();
     const sql = `UPDATE apt_article_hist 
-      SET update_yn = 'Y'
+      SET ${colName} = 'Y'
       WHERE
             ymd = '${item.ymd}'
-        AND trade_type = '${item.trade_type}'
-        AND complex_no = '${item.complex_no}'
-        AND pyeong_name = '${item.pyeong_name}'`;
+        AND trade_type = '${item.tradeType}'
+        AND complex_no = '${item.complexNo}'
+        AND pyeong_name = '${item.pyeongName}'`;
     const [rows] = await conn.query(sql);
     conn.release();
     console.log(`[Update AptArticleHist] ${rows.info}`);
@@ -247,63 +254,125 @@ module.exports = {
     conn.release();
     console.log(`[Insert Articles: ${items[0].tradeType}] ${rows.info}`);
   },
-  // FIXME:아파트 가격 업데이트
-  async updatePrice(items) {
-    try {
-      const conn = await pool.getConnection();
-      let sqls = '';
-      let sql = '';
-      sql += 'UPDATE price SET ';
-      sql += 'article_count = ?,';
-      sql += ' min_price = ?,';
-      sql += ' max_price = ?,';
-      sql += ' avg = ?,';
-      sql += ' median = ?,';
-      sql += ' avg_low = ?,';
-      sql += ' avg_high = ?,';
-      sql += ' deviation = ?,';
-      sql += ' update_yn = ?';
-      sql += ' WHERE';
-      sql += ' ymd = ?';
-      sql += ' and trade_type = ?';
-      sql += ' and complex_no = ?';
-      sql += ' and pyeong_name = ?';
-      sql += ' and filter_type = ?;';
-      items.forEach((item) => {
-        const params = [
-          item.articleCount,
-          item.minPrice,
-          item.maxPrice,
-          item.avg,
-          item.median,
-          item.avgLow,
-          item.avgHigh,
-          item.deviation,
-          item.updateYn,
-          item.ymd,
-          item.tradeType,
-          item.complexNo,
-          item.pyeongName,
-          item.filterType,
-        ];
-        sqls += mysql.format(sql, params);
-      });
-      const [rows] = await conn.query(sqls);
-      conn.release();
-      console.log(`[Update Price] ${rows.length}rows`);
-    } catch (e) {
-      console.log(e);
-    }
-  },
-  // 아파트매물이력 조회
-  async getAptArticleHist(ymd = '') {
+  async getArticles(item) {
     const conn = await pool.getConnection();
-    const sql = `SELECT a.*,
-    (SELECT area_nos FROM apt_pyeong WHERE complex_no = a.complex_no AND pyeong_name = a.pyeong_name) AS area_nos
-    FROM apt_article_hist a WHERE a.ymd = '${ymd}' AND a.update_yn = 'N' ORDER BY a.complex_no`;
+    const sql = `SELECT * FROM article
+        WHERE
+              ymd = '${item.ymd}'
+          AND trade_type = '${item.tradeType}'
+          AND complex_no = '${item.complexNo}'
+          AND pyeong_name = '${item.pyeongName}'`;
     const [rows] = await conn.query(sql);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
+  },
+  // FIXME: 다중 업데이트 샘플
+  async updateSample(items) {
+    const conn = await pool.getConnection();
+    let sqls = '';
+    let sql = '';
+    sql += 'UPDATE price SET ';
+    sql += 'article_count = ?,';
+    sql += ' min_price = ?,';
+    sql += ' max_price = ?,';
+    sql += ' avg = ?,';
+    sql += ' median = ?,';
+    sql += ' avg_low = ?,';
+    sql += ' avg_high = ?,';
+    sql += ' deviation = ?,';
+    sql += ' update_yn = ?';
+    sql += ' WHERE';
+    sql += ' ymd = ?';
+    sql += ' and trade_type = ?';
+    sql += ' and complex_no = ?';
+    sql += ' and pyeong_name = ?';
+    sql += ' and filter_type = ?;';
+    items.forEach((item) => {
+      const params = [
+        item.articleCount,
+        item.minPrice,
+        item.maxPrice,
+        item.avg,
+        item.median,
+        item.avgLow,
+        item.avgHigh,
+        item.deviation,
+        item.updateYn,
+        item.ymd,
+        item.tradeType,
+        item.complexNo,
+        item.pyeongName,
+        item.filterType,
+      ];
+      sqls += mysql.format(sql, params);
+    });
+    const [rows] = await conn.query(sqls);
+    conn.release();
+    console.log(`[Update Price] ${rows.length}rows`);
+  },
+  // FIXME: 통계 데이터 저장
+  async saveStats(items) {
+    const conn = await pool.getConnection();
+    const sql = `REPLACE INTO stats (
+        ymd,
+        trade_type,
+        complex_no,
+        pyeong_name,
+        filter_type,
+        article_count,
+        min_price,
+        max_price,
+        avg,
+        median,
+        avg_low,
+        avg_high,
+        deviation,
+        same_cnt,
+        increase_cnt,
+        decrease_cnt,
+        rate,
+        del_cnt,
+        add_cnt
+      ) VALUES ?`;
+    const [rows] = await conn.query(sql, [
+      items.map((item) => [
+        item.ymd,
+        item.tradeType,
+        item.complexNo,
+        item.pyeongName,
+        item.filterType,
+        item.articleCount,
+        item.minPrice,
+        item.maxPrice,
+        item.avg,
+        item.median,
+        item.avgLow,
+        item.avgHigh,
+        item.deviation,
+        item.sameCnt,
+        item.increaseCnt,
+        item.decreaseCnt,
+        item.rate,
+        item.delCnt,
+        item.addCnt,
+      ]),
+    ]);
+    conn.release();
+    console.log(`[Save Stats] ${rows.info}`);
+  },
+  // 업데이트할 매물이력 조회
+  async getAptArticleHist(ymd = '', searchType = '') {
+    const conn = await pool.getConnection();
+    let searchSql = `a.update_yn = 'N'`;
+    if (searchType === 'STATS') {
+      searchSql = `a.update_yn = 'Y' AND a.stats_update_yn = 'N'`;
+    }
+    const sql = `SELECT a.*,
+    (SELECT area_nos FROM apt_pyeong WHERE complex_no = a.complex_no AND pyeong_name = a.pyeong_name) AS area_nos
+    FROM apt_article_hist a WHERE a.ymd = '${ymd}' AND ${searchSql} ORDER BY a.complex_no`;
+    let [rows] = await conn.query(sql);
+    conn.release();
+    return rows.map(toCamelCase);
   },
   // 지역 조회
   async getRegions(cortarType = 'city') {
@@ -311,7 +380,7 @@ module.exports = {
     const sql = 'SELECT * FROM regions WHERE cortar_type = ? ORDER BY cortar_no';
     const [rows] = await conn.query(sql, [cortarType]);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
   },
   // 구/시에 속한 동 조회
   async getDongs(cortarNo = '') {
@@ -321,7 +390,7 @@ module.exports = {
       cortar_no LIKE '${cortarNo.substring(0, 4)}%' AND cortar_type = 'sec' ORDER BY cortar_no`;
     const [rows] = await conn.query(sql);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
   },
   // 아파트 구/시 단위로 조회
   async getAptsByCity(cortarNo = '') {
@@ -375,7 +444,7 @@ module.exports = {
     }
     const [rows] = await conn.query(sql);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
   },
   // 평 조회
   async getPyeong(complexNo = '') {
@@ -387,7 +456,7 @@ module.exports = {
     FROM pyeong a WHERE a.complex_no = ? ORDER BY a.pyeong_no`;
     const [rows] = await conn.query(sql, [complexNo]);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
   },
 
   /**
@@ -396,25 +465,25 @@ module.exports = {
    *
    */
   // 배치 이력 조회
-  async getBatchHist(ymd) {
+  async getBatchHist(ymd, batchType) {
     const conn = await pool.getConnection();
-    let sql = `SELECT ymd, status, start_dt, end_dt, error_cnt FROM batch_hist WHERE ymd = ${ymd}`;
+    let sql = `SELECT ymd, status, start_dt, end_dt, error_cnt FROM batch_hist WHERE ymd = '${ymd}' AND batch_type = '${batchType}'`;
     const [rows] = await conn.query(sql);
     conn.release();
-    return rows;
+    return rows.map(toCamelCase);
   },
 
   // 배치 이력 저장
-  async saveBatchHist(ymd, status = 'START') {
+  async saveBatchHist(ymd, batchType, status = 'START') {
     const conn = await pool.getConnection();
-    const sql = `INSERT INTO batch_hist (ymd, status, start_dt) VALUES ('${ymd}', '${status}', now())`;
+    const sql = `INSERT INTO batch_hist (ymd, batch_type, status, start_dt) VALUES ('${ymd}', '${batchType}', '${status}', now())`;
     const [rows] = await conn.query(sql);
     conn.release();
     console.log(`[Save BatchHist] ${rows.info}`);
   },
 
   // 배치 이력 업데이트
-  async updateBatchHist(ymd, status, now = 'now') {
+  async updateBatchHist(ymd, batchType, status, now = 'now') {
     const conn = await pool.getConnection();
     let sql = `UPDATE batch_hist SET status = '${status}'`;
     if (status === 'START' && now === 'now') {
@@ -425,9 +494,18 @@ module.exports = {
         sql += ',error_cnt = error_cnt + 1';
       }
     }
-    sql += ` WHERE ymd = '${ymd}'`;
+    sql += ` WHERE ymd = '${ymd}' AND batch_type = ${batchType}`;
     const [rows] = await conn.query(sql);
     conn.release();
     console.log(`[Update BatchHist] ${rows.info}`);
+  },
+
+  // 전월세전환율
+  async getRate(complexNo = '') {
+    const conn = await pool.getConnection();
+    const sql = `SELECT rate FROM rate WHERE complex_no = '${complexNo}' AND real_estate_type_code = 'APT' ORDER BY update_dt`;
+    let [rows] = await conn.query(sql);
+    conn.release();
+    return rows.map(toCamelCase);
   },
 };
