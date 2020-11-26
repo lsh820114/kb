@@ -494,7 +494,7 @@ module.exports = {
         sql += ',error_cnt = error_cnt + 1';
       }
     }
-    sql += ` WHERE ymd = '${ymd}' AND batch_type = ${batchType}`;
+    sql += ` WHERE ymd = '${ymd}' AND batch_type = '${batchType}'`;
     const [rows] = await conn.query(sql);
     conn.release();
     console.log(`[Update BatchHist] ${rows.info}`);

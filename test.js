@@ -8,9 +8,10 @@ const getRate = async () => {
   }
   return null;
 };
-const run = async () => {
+const run = async (ymd) => {
   const rate = await getRate();
-  const ymd = '20201116';
   await stats.saveStats(ymd, rate);
 };
-// run();
+let paramYmd = process.argv[2];
+run(paramYmd);
+
