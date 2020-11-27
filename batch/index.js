@@ -63,7 +63,7 @@ if (paramYmd) {
 
 const test = async () => {
   const ymd = util.getToday();
-  await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
+  // await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
   article.saveArticles(ymd);
 };
 test();
