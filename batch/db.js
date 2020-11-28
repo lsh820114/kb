@@ -221,6 +221,7 @@ module.exports = {
         move_code,
         move_month,
         move_after_ym,
+        filter_type,
         confirm_ymd
       ) VALUES ?`;
     const [rows] = await conn.query(sql, [
@@ -248,6 +249,7 @@ module.exports = {
         item.moveCode,
         item.moveMonth,
         item.moveAfterYM,
+        item.filterType,
         item.confirmYmd,
       ]),
     ]);
