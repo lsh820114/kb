@@ -30,7 +30,7 @@ module.exports = {
   // 매물 필터링
   isExcludeArticle(article = null) {
     if (!article) {
-      return false;
+      return true;
     }
     const excludeStr = ['전세', '월세', '세안고', '세끼고']; // 매물 포함 제외 문자
     const maxMonth = 3; // 최대 개월수
@@ -57,7 +57,9 @@ module.exports = {
       }
       const maxDate = moment(article.ymd).add(maxMonth, 'M').format('YYYYMMDD');
       const result = moment(toDate).isBefore(maxDate);
-      // console.log(toDate, maxDate, result);
+      if (result === true) {
+        console.log('nuno', article.articleNo, article.ymd, article.moveAfterYm, toDate, maxDate);
+      }
       return !result;
     }
     return true;

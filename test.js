@@ -13,5 +13,11 @@ const run = async (ymd) => {
   await stats.saveStats(ymd, rate);
 };
 let paramYmd = process.argv[2];
-run(paramYmd);
+//run(paramYmd);
 
+const run2 = async () => {
+  for (ymd of ['20201203']) {
+    await run(ymd);
+  }
+};
+run2();
