@@ -51,15 +51,12 @@ module.exports = {
     }
     // 협의가능
     else if (article.moveCode === 'MV003') {
-      const toDate = moment(article.moveAfterYm).endOf('month').format('YYYYMMDD');
+      const toDate = moment(article.moveAfterYM).endOf('month').format('YYYYMMDD');
       if (toDate.length !== 8) {
         return true;
       }
       const maxDate = moment(article.ymd).add(maxMonth, 'M').format('YYYYMMDD');
       const result = moment(toDate).isBefore(maxDate);
-      if (result === true) {
-        console.log('nuno', article.articleNo, article.ymd, article.moveAfterYm, toDate, maxDate);
-      }
       return !result;
     }
     return true;
