@@ -2,43 +2,38 @@ const mysql = require('mysql2/promise');
 const pool = require('./db/pool.js');
 const _ = require('lodash');
 const util = require('./util');
+const db = require('./batch/db.js');
+const moment = require('moment');
 
-const toCamelCase = (obj) => {
-  return _.mapKeys(obj, (v, k) => _.camelCase(k));
-};
+const test = async () => {
+  const params = {
+    ymd: '20201204',
+    tradeType: 'A1',
+    complexNo: '113942',
+    pyeongName: '34',
+  };
+  // 3. 매물 조회
+  const articles = await db.getArticles(params);
 
-const getArticles = async (params) => {
-  const conn = await pool.getConnection();
-  const sql = `SELECT * FROM article
-        WHERE
-              ymd = '${params.ymd}'
-          AND trade_type = '${params.tradeType}'`;
-  const [rows] = await conn.query(sql);
-  conn.release();
-  return rows.map(toCamelCase);
-};
-const updateArticle = async (ymd, articleNo, filterType = '') => {
-  const conn = await pool.getConnection();
-  let sql = `UPDATE ARTICLE SET FILTER_TYPE = '${filterType}' WHERE YMD = ${ymd} AND ARTICLE_NO = ${articleNo}`;
-  const [rows] = await conn.query(sql);
-  conn.release();
-  console.log(`[UpdateArticle] ${rows.info}`);
-};
-
-const fix = async () => {
-  //const ymd = '20201127';
-  //const complexNo = '113942';
-  //const pyeongName = '34';
-  for (ymd of ['20201203']) {
-    const params = { ymd, tradeType: 'A1' };
-    const list = await getArticles(params);
-    for (item of list) {
-      let result = util.isExcludeArticle(item);
-      let filterType = result ? '' : 'POSSIBLE';
-      await updateArticle(ymd, item.articleNo, filterType);
+  // 4. 하루전 매물 조회
+  const beforeArticles = await db.getArticles({
+    ymd: moment(params.ymd).add(-1, 'DAY').format('YYYYMMDD'),
+    tradeType: params.tradeType,
+    complexNo: params.complexNo,
+    pyeongName: params.pyeongName,
+  });
+  let beforeList = [];
+  let list = [];
+  beforeArticles.forEach((item) => {
+    if (item.filterType === 'POSSIBLE') {
+      beforeList.push(item);
     }
-  }
-  console.log('End!!!');
+  });
+  articles.forEach((item) => {
+    if (item.filterType === 'POSSIBLE') {
+      list.push(item);
+    }
+  });
+  console.log(beforeList.length, list.length);
 };
-
-fix();
+test();

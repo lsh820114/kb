@@ -67,9 +67,7 @@ module.exports = {
         });
         articles.forEach((item) => {
           articleCntInfo.current.all.articleNos.push(item.articleNo);
-          item.filterType = '';
-          if (item.tradeType === 'A1' && !util.isExcludeArticle(item)) {
-            item.filterType = 'POSSIBLE';
+          if (item.filterType === 'POSSIBLE') {
             articleCntInfo.current.filter.articleNos.push(item.articleNo);
           }
         });

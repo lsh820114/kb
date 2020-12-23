@@ -16,7 +16,7 @@ let paramYmd = process.argv[2];
 //run(paramYmd);
 
 const run2 = async () => {
-  for (ymd of ['20201203']) {
+  for (ymd of ['20201222', '20201223']) {
     await run(ymd);
   }
 };
