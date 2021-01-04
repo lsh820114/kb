@@ -334,7 +334,8 @@ module.exports = {
         decrease_cnt,
         rate,
         del_cnt,
-        add_cnt
+        add_cnt,
+        floor
       ) VALUES ?`;
     const [rows] = await conn.query(sql, [
       items.map((item) => [
@@ -357,6 +358,7 @@ module.exports = {
         item.rate,
         item.delCnt,
         item.addCnt,
+        item.floor,
       ]),
     ]);
     conn.release();

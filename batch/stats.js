@@ -54,10 +54,10 @@ module.exports = {
             all: { articleNos: [] },
             filter: { articleNos: [] },
           },
-          delCnt: 0,
-          addCnt: 0,
-          delCntFilter: 0,
-          addCntFilter: 0,
+          delCnt: [],
+          addCnt: [],
+          delCntFilter: [],
+          addCntFilter: [],
         };
         beforeArticles.forEach((item) => {
           articleCntInfo.before.all.articleNos.push(item.articleNo);
@@ -71,7 +71,7 @@ module.exports = {
             articleCntInfo.current.filter.articleNos.push(item.articleNo);
           }
         });
-        if (beforeArticles.length) {
+        if (beforeArticles.length > 0 || articles.length > 0) {
           articleCntInfo.delCnt = articleCntInfo.before.all.articleNos.filter(
             (item) => !articleCntInfo.current.all.articleNos.includes(item),
           );
@@ -88,6 +88,10 @@ module.exports = {
         const statsAll = []; // 전체
         const statsFilter = []; // 실입주 가능매물만
         const statsSave = []; // 통계 저장
+        let floorInfo = {
+          all: { floor: null, price: 0 },
+          filter: { floor: null, price: 0 },
+        };
         const data = {
           all: {
             sameCnt: 0,
@@ -119,6 +123,14 @@ module.exports = {
           } else {
             data.all.sameCnt += 1;
           }
+          // 최저가격 층수
+          if (floorInfo.all.price === 0) {
+            floorInfo.all.price = price;
+            floorInfo.all.floor = article.floor;
+          } else if (floorInfo.all.price > price) {
+            floorInfo.all.price = price;
+            floorInfo.all.floor = article.floor;
+          }
           // 가격 모음
           statsAll.push(price);
           // 실입주 가능 매물
@@ -130,6 +142,14 @@ module.exports = {
               data.filter.decreaseCnt += 1;
             } else {
               data.filter.sameCnt += 1;
+            }
+            // 최저가격 층수
+            if (floorInfo.filter.price === 0) {
+              floorInfo.filter.price = price;
+              floorInfo.filter.floor = article.floor;
+            } else if (floorInfo.filter.price > price) {
+              floorInfo.filter.price = price;
+              floorInfo.filter.floor = article.floor;
             }
             statsFilter.push(price);
           }
@@ -167,6 +187,7 @@ module.exports = {
             rate: apt.tradeType !== 'A1' ? rate : 0,
             delCnt: index === 0 ? articleCntInfo.delCnt.length : articleCntInfo.delCntFilter.length,
             addCnt: index === 0 ? articleCntInfo.addCnt.length : articleCntInfo.addCntFilter.length,
+            floor: index === 0 ? floorInfo.all.floor : floorInfo.filter.floor,
           };
           statsSave.push(vo);
         });
