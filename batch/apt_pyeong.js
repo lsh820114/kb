@@ -1,10 +1,11 @@
 /**
- * 아파트 평형별 등록
+ * 3.아파트 평형별 등록
  * (매물 목록 API 요청시 필요)
  *
  */
 
-const db = require('./db.js');
+const db = require('../db/apt_pyeong.js');
+const dbApt = require('../db/apt.js');
 
 // 매물 정보를 얻기 위한 파라미터 생성
 const getArticleParams = async (complexNo = '') => {
@@ -34,7 +35,7 @@ const cityNo = '4148000000'; // 파주시
 const run = async () => {
   const dataList = [];
   // 1. 해당시에 있는 아파트 전체 조회
-  const apts = await db.getAptsByCity(cityNo);
+  const apts = await dbApt.getAptsByCity(cityNo);
   if (apts.length === 0) {
     console.log('Empty Apt!');
     return;

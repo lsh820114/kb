@@ -8,7 +8,9 @@ require('../util/initialize.js');
 const req = require('../util/request.js');
 const util = require('../util/index.js');
 const url = require('../info/url.js');
-const db = require('./db.js');
+const db = require('../db/article.js');
+const dbApt = require('../db/apt.js');
+const dbHist = require('../db/batch_hist.js');
 
 // 아파트 매물 목록
 const getArticlesReq = async (param, page = 1) => {
@@ -51,7 +53,7 @@ module.exports = {
   async saveAptArticleHist(ymd, tradeTypes, cityNo) {
     const dataList = [];
     // 1. 파주시에 있는 아파트평형별 전체 조회
-    const apts = await db.getAptPyeongByCity(cityNo);
+    const apts = await dbApt.getAptPyeongByCity(cityNo);
     if (apts.length === 0) {
       console.error('Empty Apt!');
       return;
@@ -162,11 +164,17 @@ module.exports = {
         }
         n++;
       }
-      db.updateBatchHist(ymd, 'ARTICLE', 'DONE');
+      dbHist.updateBatchHist({ ymd, batchType: 'ARTICLE', status: 'DONE', now: 'now' });
       console.log('[End] saveArticles!');
     } catch (e) {
-      console.error('[Error] saveArticles!');
-      db.updateBatchHist(ymd, 'ARTICLE', 'ERROR');
+      console.error('[Error] saveArticles!', e);
+      dbHist.updateBatchHist({
+        ymd,
+        batchType: 'ARTICLE',
+        status: 'ERROR',
+        now: 'now',
+        errorMsg: e.toString(),
+      });
       return;
     }
   },

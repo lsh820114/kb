@@ -1,4 +1,4 @@
-const db = require('./batch/db.js');
+const db = require('./db/rate.js');
 const stats = require('./batch/stats.js');
 
 const getRate = async () => {
@@ -12,12 +12,9 @@ const run = async (ymd) => {
   const rate = await getRate();
   await stats.saveStats(ymd, rate);
 };
-let paramYmd = process.argv[2];
-//run(paramYmd);
-
-const run2 = async () => {
-  for (ymd of ['20210101', '20210102', '20210103', '20210104']) {
+const runYmds = async () => {
+  for (ymd of ['20210120']) {
     await run(ymd);
   }
 };
-run2();
+runYmds();

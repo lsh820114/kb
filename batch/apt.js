@@ -1,12 +1,12 @@
 /**
  *
- * 지역별 아파트 정보수집
+ * 2.지역별 아파트 정보수집
  *
  */
 
 const req = require('../util/request.js');
 const url = require('../info/url.js');
-const db = require('./db.js');
+const db = require('../db/apt.js');
 
 const getAreaApts = async (cortarNo = '') => {
   return await req.get(`${url.getAreaApts()}`, { cortarNo, realEstateType: 'APT:ABYG:JGC' });
@@ -21,7 +21,7 @@ const updateApt = async (apts = []) => {
     const aptInfo = await getAptOverView(apt.complexNo);
     aptAll.push(aptInfo.complexDetail);
   }
-  console.log(aptAll);
+  // console.log(aptAll);
   if (aptAll.length) {
     await db.saveApt(aptAll);
   }
@@ -65,4 +65,4 @@ const run = async () => {
 };
 
 // updateBunYangApt();
-// run();
+run();

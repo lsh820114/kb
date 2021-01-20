@@ -1,5 +1,10 @@
+const _ = require('lodash');
 const moment = require('moment');
+
 module.exports = {
+  toCamelCase(obj) {
+    return _.mapKeys(obj, (v, k) => _.camelCase(k));
+  },
   addComma(number) {
     return number ? number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
   },

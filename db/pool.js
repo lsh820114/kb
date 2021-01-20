@@ -7,9 +7,9 @@ const mysql = require('mysql2/promise');
 const pool = mysql.createPool({
   host: 'dev.thekeytech.co.kr',
   port: 4406,
-  database: 'nuno',
-  user: 'babel',
-  password: 'babel000',
+  database: 'test',
+  user: 'lsh820114',
+  password: 'tmdghks11',
   connectionLimit: 5,
   multipleStatements: true,
 });

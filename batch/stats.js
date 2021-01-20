@@ -5,7 +5,9 @@
 
 require('../util/initialize.js');
 
-const db = require('./db.js');
+const db = require('../db/stats.js');
+const dbArticle = require('../db/article.js');
+const dbHist = require('../db/batch_hist.js');
 const util = require('../util/index.js');
 const moment = require('moment');
 const d3 = require('d3');
@@ -20,7 +22,7 @@ module.exports = {
     }
     try {
       // 1. 업데이트할 아파트 조회
-      const apts = await db.getAptArticleHist(ymd, 'STATS');
+      const apts = await dbArticle.getAptArticleHist(ymd, 'STATS');
       if (apts.length === 0) {
         console.error('Empty Apts!');
         return;
@@ -34,10 +36,10 @@ module.exports = {
           pyeongName: apt.pyeongName,
         };
         // 3. 매물 조회
-        const articles = await db.getArticles(params);
+        const articles = await dbArticle.getArticles(params);
 
         // 4. 하루전 매물 조회
-        const beforeArticles = await db.getArticles({
+        const beforeArticles = await dbArticle.getArticles({
           ymd: moment(ymd).add(-1, 'DAY').format('YYYYMMDD'),
           tradeType: apt.tradeType,
           complexNo: apt.complexNo,
@@ -193,16 +195,16 @@ module.exports = {
         });
         if (statsSave.length > 0) {
           await db.saveStats(statsSave);
-          await db.updateAptArticleHist(params, 'stats_update_yn');
+          await dbArticle.updateAptArticleHist(params, 'stats_update_yn');
         } else {
-          await db.updateAptArticleHist(params, 'stats_update_yn');
+          await dbArticle.updateAptArticleHist(params, 'stats_update_yn');
         }
       }
-      // db.updateBatchHist(ymd, 'STATS', 'DONE');
+      // dbHist.updateBatchHist({ymd, batchType: 'STATS', status: 'DONE', now: 'now'});
       console.log('[End] saveStats!');
     } catch (e) {
-      console.error('[Error] saveStats!');
-      // db.updateBatchHist(ymd, 'STATS', 'ERROR');
+      console.error('[Error] saveStats!', e);
+      // dbHist.updateBatchHist({ymd, batchType: 'STATS', status: 'ERROR', now: 'now', errorMsg: e.toString()});
       return;
     }
   },

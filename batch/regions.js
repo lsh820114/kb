@@ -1,12 +1,12 @@
 /**
  *
- * 시/도, 시/군/구, 읍/면/동 정보수집
+ * 1.시/도, 시/군/구, 읍/면/동 정보수집
  *
  */
 
 const req = require('../util/request.js');
 const url = require('../info/url.js');
-const db = require('./db.js');
+const db = require('../db/regions.js');
 
 const getData = async (cortarNo = '0000000000') => {
   return await req.get(`${url.getArea()}?cortarNo=${cortarNo}`);
