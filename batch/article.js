@@ -91,7 +91,7 @@ module.exports = {
         for (page of [1, 2, 3, 4, 5]) {
           if (isMoreData) {
             // 2. 해당 아파트의 매물 조회
-            console.log('ttttttttttttttttt', apt);
+            console.log('ttttttttttttttttt', apt, page);
             const result = await getArticlesReq(
               {
                 complexNo: apt.complexNo,
