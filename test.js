@@ -3,12 +3,12 @@ const req = require('./util/request.js');
 const url = require('./info/url.js');
 
 const opts = {
-  host: 'public-vpn-94.opengw.net', // normally '127.0.0.1', will default to if undefined
+  host: '219.100.37.3', // normally '127.0.0.1', will default to if undefined
   port: 443, //port openvpn management console
   timeout: 1500, //timeout for connection - optional, will default to 1500ms if undefined
   logpath: 'log.txt', //optional write openvpn console output to file, can be relative path or absolute
 };
-/*
+
 const openvpn = openvpnmanager.connect(opts);
 openvpn.on('connected', (e) => {
   //openvpnmanager.authorize(auth);
@@ -24,7 +24,7 @@ openvpn.on('disconnected', () => {
   // finally destroy the disconnected manager
   openvpnmanager.destroy();
 });
-*/
+
 // 아파트 매물 목록
 const getArticlesReq = async (param, page = 1) => {
   return await req.get(
@@ -97,4 +97,4 @@ const run = async () => {
   );
   console.log('result', result);
 };
-run();
+//run();
