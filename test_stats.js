@@ -13,7 +13,7 @@ const run = async (ymd) => {
   await stats.saveStats(ymd, rate);
 };
 const runYmds = async () => {
-  for (ymd of ['20210120']) {
+  for (ymd of ['20210122']) {
     await run(ymd);
   }
 };

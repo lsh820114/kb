@@ -1,5 +1,9 @@
-const util = require('../util/index.js');
-const article = require('./article.js');
+const util = require('./util/index.js');
+const article = require('./batch/article.js');
+
+// 전역 정보
+const cityNo = '4148000000'; // 파주시
+const tradeTypes = ['A1', 'B1', 'B2'];
 
 const run = async () => {
   // const ymd = '20201229';
