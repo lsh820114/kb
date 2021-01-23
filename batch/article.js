@@ -102,7 +102,7 @@ module.exports = {
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
             console.time('sleep');
-            await util.sleep(2000);
+            await util.sleep(5000);
             console.timeEnd('sleep');
           }
         }
