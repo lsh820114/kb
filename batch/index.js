@@ -39,7 +39,7 @@ const run = async (ymd) => {
     if (status === 'DONE') {
       articleJob.cancel();
     } else if (status === 'ERROR') {
-      if (errorCnt > 20) {
+      if (errorCnt > 5) {
         articleJob.cancel();
         return;
       }
