@@ -88,9 +88,7 @@ module.exports = {
         console.debug(`${n} of ${apts.length}...`);
         let isMoreData = true;
         let articles = [];
-        for (page of [1]) {
-          console.log('page Start', page);
-          //for (page of [1, 2, 3, 4, 5]) {
+        for (page of [1, 2, 3, 4, 5]) {
           if (isMoreData) {
             // 2. 해당 아파트의 매물 조회
             const result = await getArticlesReq(
@@ -103,9 +101,7 @@ module.exports = {
             );
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
-            console.time('sleep');
-            await util.sleep(5000);
-            console.timeEnd('sleep');
+            await util.sleep(1500);
           }
         }
         const dataList = [];
@@ -113,7 +109,9 @@ module.exports = {
         for (article of articles) {
           const articleNo = article.articleNo;
           // 4. 매물 상세 조회
+          console.log('item before');
           const item = await getArticleReq(articleNo);
+          console.log('item after', item);
           const vo = {
             ymd,
             articleNo: article.articleNo,
