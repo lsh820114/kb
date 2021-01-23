@@ -99,6 +99,7 @@ module.exports = {
               },
               page,
             );
+            console.log('result', result);
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
             await util.sleep(1000);
