@@ -27,7 +27,10 @@ openvpn.on('disconnected', () => {
 */
 // 아파트 매물 목록
 const getArticlesReq = async (param, page = 1) => {
-  return await req.get(`${url.getArticles(param.complexNo)}`, {
+  return await req.get(
+    `${url.getArticles(
+      param.complexNo,
+    )}` /*{
     realEstateType: 'APT:ABYG:JGC',
     tradeType: param.tradeType,
     tag: '::::::::',
@@ -53,7 +56,35 @@ const getArticlesReq = async (param, page = 1) => {
     areaNos: param.areaNos,
     type: 'list',
     order: 'prc',
-  });
+  }*/,
+    {
+      realEstateType: 'APT:ABYG:JGC',
+      tradeType: 'A1',
+      tag: '::::::::',
+      rentPriceMin: 0,
+      rentPriceMax: 900000000,
+      priceMin: 0,
+      priceMax: 900000000,
+      areaMin: 0,
+      areaMax: 900000000,
+      oldBuildYears: '',
+      recentlyBuildYears: '',
+      minHouseHoldCount: '',
+      maxHouseHoldCount: '',
+      showArticle: false,
+      sameAddressGroup: true,
+      minMaintenanceCost: '',
+      maxMaintenanceCost: '',
+      priceType: 'RETAIL',
+      directions: '',
+      page: 2,
+      complexNo: '10008',
+      buildingNos: '',
+      areaNos: '1',
+      type: 'list',
+      order: 'prc',
+    },
+  );
 };
 const run = async () => {
   const result = await getArticlesReq(

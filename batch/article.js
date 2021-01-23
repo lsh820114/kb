@@ -103,7 +103,7 @@ module.exports = {
             console.log('ttttttttttttttttt2');
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
-            await util.sleep(1000);
+            await util.sleep(2000);
           }
         }
         const dataList = [];
