@@ -101,9 +101,9 @@ module.exports = {
             );
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
-            console.time('sleep before');
+            console.time('sleep');
             await util.sleep(2000);
-            console.timeEnd('sleep after');
+            console.timeEnd('sleep');
           }
         }
         const dataList = [];
