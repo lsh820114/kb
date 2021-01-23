@@ -91,7 +91,6 @@ module.exports = {
         for (page of [1, 2, 3, 4, 5]) {
           if (isMoreData) {
             // 2. 해당 아파트의 매물 조회
-            console.log('ttttttttttttttttt', apt, page);
             const result = await getArticlesReq(
               {
                 complexNo: apt.complexNo,
@@ -100,10 +99,11 @@ module.exports = {
               },
               page,
             );
-            console.log('ttttttttttttttttt2');
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
+            console.time('sleep before');
             await util.sleep(2000);
+            console.timeEnd('sleep after');
           }
         }
         const dataList = [];
