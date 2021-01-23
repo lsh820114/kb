@@ -88,7 +88,8 @@ module.exports = {
         console.debug(`${n} of ${apts.length}...`);
         let isMoreData = true;
         let articles = [];
-        for (page of [1, 2, 3, 4, 5]) {
+        for (page of [1]) {
+          //for (page of [1, 2, 3, 4, 5]) {
           if (isMoreData) {
             // 2. 해당 아파트의 매물 조회
             const result = await getArticlesReq(
