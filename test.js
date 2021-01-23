@@ -58,7 +58,7 @@ const getArticlesReq = async (param, page = 1) => {
 const run = async () => {
   const result = await getArticlesReq(
     {
-      complexNo: '111541',
+      complexNo: '10008',
       tradeType: 'A1',
       areaNos: '1',
     },
