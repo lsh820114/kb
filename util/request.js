@@ -24,6 +24,7 @@ module.exports = {
             console.error(
               '------------------------------------------------------------------------------',
             );
+            console.error('[Body]', body);
             reject(e);
           }
         },
