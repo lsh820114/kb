@@ -62,7 +62,7 @@ const run = async () => {
       tradeType: 'A1',
       areaNos: '1',
     },
-    1,
+    2,
   );
   console.log('result', result);
 };
