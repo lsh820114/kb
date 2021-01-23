@@ -101,7 +101,7 @@ module.exports = {
             );
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
-            await util.sleep(60000);
+            await util.sleep(2000);
           }
         }
         const dataList = [];
