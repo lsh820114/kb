@@ -89,6 +89,7 @@ module.exports = {
         let isMoreData = true;
         let articles = [];
         for (page of [1]) {
+          console.log('page Start', page);
           //for (page of [1, 2, 3, 4, 5]) {
           if (isMoreData) {
             // 2. 해당 아파트의 매물 조회
