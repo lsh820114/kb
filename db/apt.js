@@ -147,13 +147,14 @@ module.exports = {
       }
       sql += ` real_estate_type_code = '${realEstateTypeCode}'`;
     }
+    console.log('sql', sql);
     const [rows] = await conn.query(sql);
     conn.release();
     return rows.map(util.toCamelCase);
   },
-  // 아파트 구/시 단위로 조회
+  // 아파트 구/시 단위로 조회(분양권 포함)
   async getAptsByCity(cortarNo = '') {
-    return await this.getApts(cortarNo, 'dvsn', 'APT');
+    return await this.getApts(cortarNo, 'dvsn', null);
   },
   // 아파트 동 단위로 조회
   async getAptsByDong(cortarNo = '') {
@@ -167,9 +168,9 @@ module.exports = {
   async getAbygByDong(cortarNo = '') {
     return await this.getApts(cortarNo, 'sec', 'ABYG');
   },
-  // 아파트평형별 구/시 단위로 조회
+  // 아파트평형별 구/시 단위로 조회(분양권 포함)
   async getAptPyeongByCity(cortarNo = '') {
-    return await this.getApts(cortarNo, 'dvsn', 'APT', 'apt_pyeong');
+    return await this.getApts(cortarNo, 'dvsn', null, 'apt_pyeong');
   },
   // 아파트평형별 동 단위로 조회
   async getAptPyeongByDong(cortarNo = '') {
