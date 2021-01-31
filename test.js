@@ -1,100 +1,19 @@
-const openvpnmanager = require('node-openvpn');
-const req = require('./util/request.js');
-const url = require('./info/url.js');
-
-const opts = {
-  host: '219.100.37.3', // normally '127.0.0.1', will default to if undefined
-  port: 443, //port openvpn management console
-  timeout: 1500, //timeout for connection - optional, will default to 1500ms if undefined
-  logpath: 'log.txt', //optional write openvpn console output to file, can be relative path or absolute
+const hasStr = (excludeStr = [], text = '') => {
+  return excludeStr.some((item) => {
+    return text.indexOf(item) > -1;
+  });
 };
 
-const openvpn = openvpnmanager.connect(opts);
-openvpn.on('connected', (e) => {
-  //openvpnmanager.authorize(auth);
-  console.log('connected');
-});
-openvpn.on('error', (error) => {
-  console.log(error);
-});
-openvpn.on('console-output', (output) => {
-  console.log(output);
-});
-openvpn.on('disconnected', () => {
-  // finally destroy the disconnected manager
-  openvpnmanager.destroy();
-});
-
-// 아파트 매물 목록
-const getArticlesReq = async (param, page = 1) => {
-  return await req.get(
-    `${url.getArticles(
-      param.complexNo,
-    )}` /*{
-    realEstateType: 'APT:ABYG:JGC',
-    tradeType: param.tradeType,
-    tag: '::::::::',
-    rentPriceMin: 0,
-    rentPriceMax: 900000000,
-    priceMin: 0,
-    priceMax: 900000000,
-    areaMin: 0,
-    areaMax: 900000000,
-    oldBuildYears: '',
-    recentlyBuildYears: '',
-    minHouseHoldCount: '',
-    maxHouseHoldCount: '',
-    showArticle: false,
-    sameAddressGroup: true,
-    minMaintenanceCost: '',
-    maxMaintenanceCost: '',
-    priceType: 'RETAIL',
-    directions: '',
-    page,
-    complexNo: param.complexNo,
-    buildingNos: '',
-    areaNos: param.areaNos,
-    type: 'list',
-    order: 'prc',
-  }*/,
-    {
-      realEstateType: 'APT:ABYG:JGC',
-      tradeType: 'A1',
-      tag: '::::::::',
-      rentPriceMin: 0,
-      rentPriceMax: 900000000,
-      priceMin: 0,
-      priceMax: 900000000,
-      areaMin: 0,
-      areaMax: 900000000,
-      oldBuildYears: '',
-      recentlyBuildYears: '',
-      minHouseHoldCount: '',
-      maxHouseHoldCount: '',
-      showArticle: false,
-      sameAddressGroup: true,
-      minMaintenanceCost: '',
-      maxMaintenanceCost: '',
-      priceType: 'RETAIL',
-      directions: '',
-      page: 2,
-      complexNo: '10008',
-      buildingNos: '',
-      areaNos: '1',
-      type: 'list',
-      order: 'prc',
-    },
-  );
+const article = {
+  articleDesc: '',
+  floor: '고',
 };
-const run = async () => {
-  const result = await getArticlesReq(
-    {
-      complexNo: '10008',
-      tradeType: 'A1',
-      areaNos: '1',
-    },
-    2,
-  );
-  console.log('result', result);
-};
-//run();
+const excludeStr = ['전세', '월세', '세안고', '세끼고']; // 매물 포함 제외 문자
+const excludeFloor = ['저', '중', '고']; // 층수 미표시는 제외함
+//if (article.articleDesc) {
+if (hasStr(excludeStr, article.articleDesc)) {
+  console.log('true');
+} else {
+  console.log('false');
+}
+//}

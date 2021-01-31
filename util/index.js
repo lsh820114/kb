@@ -40,15 +40,14 @@ module.exports = {
     const excludeStr = ['전세', '월세', '세안고', '세끼고']; // 매물 포함 제외 문자
     const excludeFloor = ['저', '중', '고']; // 층수 미표시는 제외함
     const maxMonth = 3; // 최대 개월수
+    if (this.hasStr(excludeFloor, article.floor)) {
+      return true;
+    }
     if (article.articleDesc) {
-      if (
-        this.hasStr(excludeStr, article.articleDesc) ||
-        this.hasStr(excludeFloor, article.floor)
-      ) {
+      if (this.hasStr(excludeStr, article.articleDesc)) {
         return true;
       }
     }
-
     if (article.moveCode === 'MV001') {
       return false;
     }

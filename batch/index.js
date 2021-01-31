@@ -12,7 +12,7 @@ const aptInfo = require('../info/apt.js');
 const schedule = require('node-schedule');
 
 // 전역 정보
-const cityNo = '4148000000'; // 파주시
+// const cityNo = '4148000000'; // 파주시
 let paramYmd = process.argv[2];
 let tradeTypes = process.argv[3] ? process.argv[3].split(',') : ['A1', 'B1', 'B2'];
 let articleJob = null;
