@@ -10,6 +10,7 @@ const util = require('../util/index.js');
 const url = require('../info/url.js');
 const db = require('../db/article.js');
 const dbApt = require('../db/apt.js');
+const dbAptPyeong = require('../db/apt_pyeong.js');
 const dbHist = require('../db/batch_hist.js');
 
 // 아파트 매물 목록
@@ -50,10 +51,16 @@ const getArticleReq = async (articleNo = '') => {
 
 module.exports = {
   // 아파트 평형별 매물수집 이력 등록
-  async saveAptArticleHist(ymd, tradeTypes, cityNo) {
+  async saveAptArticleHist({ ymd, tradeTypes, cityNo, complexNos }) {
     const dataList = [];
     // 1. 파주시에 있는 아파트평형별 전체 조회
-    const apts = await dbApt.getAptPyeongByCity(cityNo);
+    let apts = [];
+    if (cityNo) {
+      apts = await dbApt.getAptPyeongByCity(cityNo);
+    } else if (complexNos) {
+      apts = await dbAptPyeong.getAptPyeong({ complexNos });
+    }
+
     if (apts.length === 0) {
       console.error('Empty Apt!');
       return;
@@ -101,7 +108,7 @@ module.exports = {
             );
             isMoreData = result.isMoreData;
             articles = [...articles, ...result.articleList];
-            await util.sleep(2000);
+            await util.sleep(3500);
           }
         }
         const dataList = [];
@@ -153,7 +160,7 @@ module.exports = {
             vo.filterType = 'POSSIBLE';
           }
           dataList.push(vo);
-          await util.sleep(2000);
+          await util.sleep(3500);
         }
         // 5. 매물 저장
         if (dataList.length > 0) {

@@ -8,6 +8,7 @@ require('../util/initialize.js');
 const util = require('../util/index.js');
 const db = require('../db/batch_hist.js');
 const article = require('./article.js');
+const aptInfo = require('../info/apt.js');
 const schedule = require('node-schedule');
 
 // 전역 정보
@@ -21,7 +22,11 @@ const startBatch = async (ymd) => {
   const result = await db.getBatchHist(ymd, 'ARTICLE');
   if (result.length === 0) {
     await db.saveBatchHist(ymd, 'ARTICLE');
-    await article.saveAptArticleHist(ymd, tradeTypes, cityNo);
+    /* 
+    파주시 전체
+    await article.saveAptArticleHist({ ymd, tradeTypes, cityNo });  
+    */
+    await article.saveAptArticleHist({ ymd, tradeTypes, complexNos: aptInfo.getApts() });
     article.saveArticles(ymd);
     // 10분간격 재실행
     articleJob = schedule.scheduleJob('0 0/10 * * * ?', () => {

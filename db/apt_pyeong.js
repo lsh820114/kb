@@ -8,6 +8,14 @@ const pool = require('./pool.js');
 const util = require('../util');
 
 module.exports = {
+  // 아파트별 평형 조회
+  async getAptPyeong(item) {
+    const conn = await pool.getConnection();
+    let sql = `SELECT * FROM apt_pyeong WHERE complex_no IN (?) ORDER BY complex_no, pyeong_name`;
+    const [rows] = await conn.query(sql, [item.complexNos]);
+    conn.release();
+    return rows.map(util.toCamelCase);
+  },
   // 평 조회
   async getPyeong(complexNo = '') {
     const conn = await pool.getConnection();
