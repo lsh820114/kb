@@ -35,7 +35,7 @@ const updateBunYangApt = async () => {
 // 아파트/평형 저장
 const run = async () => {
   // 1. 파주시 동목록 조회 (LIKE xxxx%)
-  const cityNo = '4148000000';
+  const cityNo = '4128700000';
   const dongs = await db.getDongs(cityNo);
   for (dong of dongs) {
     const cortarNo = dong.cortarNo;

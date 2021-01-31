@@ -30,7 +30,7 @@ const getArticleParams = async (complexNo = '') => {
   return params;
 };
 
-const cityNo = '4148000000'; // 파주시
+const cityNo = '4128500000'; // 파주시
 
 const run = async () => {
   const dataList = [];
